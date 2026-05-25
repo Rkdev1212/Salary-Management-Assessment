@@ -1,7 +1,7 @@
 import { Router } from "express";
+import analyticsRoutes from "./analytics.routes";
 import authRoutes from "./auth.routes";
 import employeeRoutes from "./employee.routes";
-import analyticsRoutes from "./analytics.routes";
 
 const router = Router();
 

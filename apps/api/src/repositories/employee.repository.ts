@@ -1,14 +1,14 @@
-import { prisma } from "../config/database";
+import type { Prisma } from "@prisma/client";
 import type {
-	Employee,
 	CreateEmployeeDto,
-	UpdateEmployeeDto,
-	PaginationParams,
-	PaginatedResponse,
+	Employee,
 	EmployeeFilters,
+	PaginatedResponse,
+	PaginationParams,
+	UpdateEmployeeDto,
 } from "@repo/types";
 import { formatFullName } from "@repo/utils";
-import type { Prisma } from "@prisma/client";
+import { prisma } from "../config/database";
 
 export class EmployeeRepository {
 	async create(dto: CreateEmployeeDto): Promise<Employee> {

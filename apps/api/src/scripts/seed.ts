@@ -1,10 +1,10 @@
-import { faker } from "@faker-js/faker";
-import { prisma } from "../config/database";
-import { logger } from "../config/logger";
-import { EmploymentType, EmployeeStatus, SalaryBand } from "@repo/types";
-import { formatFullName } from "@repo/utils";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { faker } from "@faker-js/faker";
+import { EmployeeStatus, EmploymentType, SalaryBand } from "@repo/types";
+import { formatFullName } from "@repo/utils";
+import { prisma } from "../config/database";
+import { logger } from "../config/logger";
 
 const BATCH_SIZE = 500;
 const TOTAL_EMPLOYEES = 10000;
@@ -186,9 +186,9 @@ async function seed(): Promise<void> {
 		});
 
 		logger.info("Employee distribution by country:");
-		stats.forEach((stat) => {
+		for (const stat of stats) {
 			logger.info(`  ${stat.country}: ${stat._count}`);
-		});
+		}
 		// Create default admin user
 		const bcrypt = await import("bcrypt");
 		const hashedPassword = await bcrypt.hash("password123", 12);

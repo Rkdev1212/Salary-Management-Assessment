@@ -1,10 +1,10 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { LoginPage } from "@/pages/login";
+import { Toaster } from "@/components/ui/toaster";
 import { DashboardPage } from "@/pages/dashboard";
 import { EmployeesPage } from "@/pages/employees";
-import { ProtectedRoute } from "@/components/auth/protected-route";
+import { LoginPage } from "@/pages/login";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 function App() {
 	return (

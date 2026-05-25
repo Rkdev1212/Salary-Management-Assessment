@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import type { LoginDto, RegisterDto, AuthResponse } from "@repo/types";
+import type { AuthResponse, LoginDto, RegisterDto } from "@repo/types";
 
 export const authService = {
 	async login(data: LoginDto): Promise<AuthResponse> {

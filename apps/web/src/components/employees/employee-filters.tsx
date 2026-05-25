@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -6,11 +7,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { employeeService } from "@/services/employee.service";
-import { EmploymentType, EmployeeStatus, SalaryBand } from "@repo/types";
+import { EmployeeStatus, EmploymentType } from "@repo/types";
 import type { EmployeeFilters as Filters } from "@repo/types";
+import { useQuery } from "@tanstack/react-query";
 
 interface EmployeeFiltersProps {
 	filters: Filters;
@@ -30,10 +30,16 @@ export function EmployeeFilters({
 		key: keyof Filters,
 		value: string | undefined,
 	) => {
-		onFiltersChange({
-			...filters,
-			[key]: value || undefined,
-		});
+		const newFilters = { ...filters };
+
+		// Remove the filter if value is empty string or undefined
+		if (!value || value === "") {
+			delete newFilters[key];
+		} else {
+			newFilters[key] = value as any;
+		}
+
+		onFiltersChange(newFilters);
 	};
 
 	const clearFilters = () => {

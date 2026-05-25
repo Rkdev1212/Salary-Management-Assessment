@@ -89,7 +89,7 @@ export function createSalaryBuckets(
 		count: 0,
 	}));
 
-	salaries.forEach((salary) => {
+	for (const salary of salaries) {
 		const bucketIndex = Math.min(
 			Math.floor((salary - min) / bucketSize),
 			bucketCount - 1,
@@ -98,7 +98,7 @@ export function createSalaryBuckets(
 		if (bucket) {
 			bucket.count++;
 		}
-	});
+	}
 
 	return buckets;
 }

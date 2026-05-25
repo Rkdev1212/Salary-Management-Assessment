@@ -1,14 +1,14 @@
-import { prisma } from "../config/database";
-import { calculateMedian, calculateAverage, groupBy } from "@repo/utils";
 import type {
 	AnalyticsDashboard,
 	CountrySalaryStats,
-	JobTitleSalaryStats,
 	DepartmentStats,
-	SalaryDistribution,
-	HiringTrend,
 	EmployeeStatus,
+	HiringTrend,
+	JobTitleSalaryStats,
+	SalaryDistribution,
 } from "@repo/types";
+import { calculateAverage, calculateMedian, groupBy } from "@repo/utils";
+import { prisma } from "../config/database";
 
 export class AnalyticsService {
 	async getDashboard(): Promise<AnalyticsDashboard> {
@@ -95,13 +95,13 @@ export class AnalyticsService {
 
 		const grouped: Record<string, typeof employees> = {};
 
-		employees.forEach((emp) => {
+		for (const emp of employees) {
 			const key = `${emp.jobTitle}|${emp.country}`;
 			if (!grouped[key]) {
 				grouped[key] = [];
 			}
 			grouped[key]?.push(emp);
-		});
+		}
 
 		return Object.entries(grouped).map(([key, jobEmployees]) => {
 			const [jobTitle, country] = key.split("|") as [string, string];
@@ -166,18 +166,18 @@ export class AnalyticsService {
 			};
 		});
 
-		salaries.forEach((salary) => {
+		for (const salary of salaries) {
 			const bucketIndex = Math.min(Math.floor((salary - min) / bucketSize), 9);
 			const bucket = buckets[bucketIndex];
 			if (bucket) {
 				bucket.count++;
 			}
-		});
+		}
 
-		buckets.forEach((bucket) => {
+		for (const bucket of buckets) {
 			bucket.percentage =
 				Math.round((bucket.count / salaries.length) * 100 * 100) / 100;
-		});
+		}
 
 		return buckets;
 	}
@@ -189,11 +189,11 @@ export class AnalyticsService {
 
 		const grouped: Record<string, number> = {};
 
-		employees.forEach((emp) => {
+		for (const emp of employees) {
 			const date = new Date(emp.joiningDate);
 			const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 			grouped[key] = (grouped[key] ?? 0) + 1;
-		});
+		}
 
 		return Object.entries(grouped)
 			.map(([key, count]) => {
@@ -225,9 +225,9 @@ export class AnalyticsService {
 		});
 
 		const counts: Record<string, number> = {};
-		result.forEach((r) => {
+		for (const r of result) {
 			counts[r.status] = r._count;
-		});
+		}
 
 		return counts as Record<EmployeeStatus, number>;
 	}

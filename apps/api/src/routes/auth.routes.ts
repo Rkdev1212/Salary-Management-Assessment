@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/auth.controller";
-import { validateBody } from "../middleware/validate";
 import { authenticate } from "../middleware/auth";
+import { validateBody } from "../middleware/validate";
 import {
-	registerSchema,
 	loginSchema,
 	refreshTokenSchema,
+	registerSchema,
 } from "../validators/auth.validator";
 
 const router = Router();

@@ -1,12 +1,12 @@
-import type { Request, Response, NextFunction } from "express";
-import { EmployeeService } from "../services/employee.service";
 import type {
-	CreateEmployeeDto,
-	UpdateEmployeeDto,
-	PaginationParams,
-	EmployeeFilters,
 	ApiResponse,
+	CreateEmployeeDto,
+	EmployeeFilters,
+	PaginationParams,
+	UpdateEmployeeDto,
 } from "@repo/types";
+import type { NextFunction, Request, Response } from "express";
+import { EmployeeService } from "../services/employee.service";
 
 export class EmployeeController {
 	private service: EmployeeService;

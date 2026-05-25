@@ -1,17 +1,17 @@
 import { Router } from "express";
 import { EmployeeController } from "../controllers/employee.controller";
+import { authenticate } from "../middleware/auth";
 import {
 	validateBody,
 	validateParams,
 	validateQuery,
 } from "../middleware/validate";
-import { authenticate } from "../middleware/auth";
 import {
 	createEmployeeSchema,
-	updateEmployeeSchema,
-	paginationSchema,
 	employeeFiltersSchema,
 	idParamSchema,
+	paginationSchema,
+	updateEmployeeSchema,
 } from "../validators/employee.validator";
 
 const router = Router();

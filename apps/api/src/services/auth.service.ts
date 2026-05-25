@@ -1,15 +1,15 @@
+import type {
+	AuthResponse,
+	AuthTokens,
+	AuthUser,
+	LoginDto,
+	RegisterDto,
+} from "@repo/types";
 import bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 import { prisma } from "../config/database";
 import { env } from "../config/env";
-import { UnauthorizedError, ConflictError } from "../middleware/error-handler";
-import type {
-	LoginDto,
-	RegisterDto,
-	AuthResponse,
-	AuthTokens,
-	AuthUser,
-} from "@repo/types";
+import { ConflictError, UnauthorizedError } from "../middleware/error-handler";
 
 export class AuthService {
 	private readonly SALT_ROUNDS = 12;
@@ -123,7 +123,7 @@ export class AuthService {
 			expiresIn: env.JWT_EXPIRATION as jwt.SignOptions["expiresIn"],
 		};
 
-		const accessToken = (jwt.sign as any)(
+		const accessToken = jwt.sign(
 			{
 				userId: user.id,
 				email: user.email,
@@ -139,7 +139,7 @@ export class AuthService {
 			expiresIn: env.JWT_REFRESH_EXPIRATION as jwt.SignOptions["expiresIn"],
 		};
 
-		const refreshToken = (jwt.sign as any)(
+		const refreshToken = jwt.sign(
 			{ userId: user.id },
 			refreshSecret,
 			refreshOptions,

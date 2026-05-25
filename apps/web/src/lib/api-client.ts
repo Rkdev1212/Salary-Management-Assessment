@@ -1,5 +1,5 @@
+import type { ApiError, ApiResponse } from "@repo/types";
 import axios, { type AxiosInstance, type AxiosError } from "axios";
-import type { ApiResponse, ApiError } from "@repo/types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 

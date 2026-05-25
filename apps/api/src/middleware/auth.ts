@@ -1,8 +1,8 @@
-import type { Request, Response, NextFunction } from "express";
+import type { AuthUser } from "@repo/types";
+import type { NextFunction, Request, Response } from "express";
 import * as jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { UnauthorizedError } from "./error-handler";
-import type { AuthUser } from "@repo/types";
 
 export interface AuthRequest extends Request {
 	user?: AuthUser;

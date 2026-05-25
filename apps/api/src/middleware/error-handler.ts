@@ -1,7 +1,7 @@
-import type { Request, Response, NextFunction } from "express";
+import type { ApiError } from "@repo/types";
+import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
 import { logger } from "../config/logger";
-import type { ApiError } from "@repo/types";
 
 export class AppError extends Error {
 	constructor(

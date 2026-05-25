@@ -1,6 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
-import { AnalyticsService } from "../services/analytics.service";
 import type { ApiResponse } from "@repo/types";
+import type { NextFunction, Request, Response } from "express";
+import { AnalyticsService } from "../services/analytics.service";
 
 export class AnalyticsController {
 	private service: AnalyticsService;

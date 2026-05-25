@@ -1,12 +1,12 @@
-import type { Request, Response, NextFunction } from "express";
-import { AuthService } from "../services/auth.service";
 import type {
-	LoginDto,
-	RegisterDto,
 	ApiResponse,
 	AuthResponse,
+	LoginDto,
+	RegisterDto,
 } from "@repo/types";
+import type { NextFunction, Request, Response } from "express";
 import type { AuthRequest } from "../middleware/auth";
+import { AuthService } from "../services/auth.service";
 
 export class AuthController {
 	private service: AuthService;

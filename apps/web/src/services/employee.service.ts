@@ -1,11 +1,11 @@
 import { apiClient } from "@/lib/api-client";
 import type {
-	Employee,
 	CreateEmployeeDto,
-	UpdateEmployeeDto,
+	Employee,
+	EmployeeFilters,
 	PaginatedResponse,
 	PaginationParams,
-	EmployeeFilters,
+	UpdateEmployeeDto,
 } from "@repo/types";
 
 export const employeeService = {

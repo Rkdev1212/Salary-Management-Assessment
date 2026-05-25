@@ -1,5 +1,5 @@
+import { EmployeeStatus, EmploymentType, SalaryBand } from "@repo/types";
 import { z } from "zod";
-import { EmploymentType, EmployeeStatus, SalaryBand } from "@repo/types";
 
 export const createEmployeeSchema = z.object({
 	firstName: z.string().min(1).max(100),

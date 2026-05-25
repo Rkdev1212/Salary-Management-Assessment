@@ -1,6 +1,6 @@
+import type { AuthUser } from "@repo/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { AuthUser } from "@repo/types";
 
 interface AuthState {
 	user: AuthUser | null;

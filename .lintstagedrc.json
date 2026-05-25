@@ -1,4 +1,7 @@
 {
-	"*.{js,jsx,ts,tsx}": ["biome format --write", "biome lint --apply"],
+	"*.{js,jsx,ts,tsx}": [
+		"biome format --write",
+		"biome lint --write"
+	],
 	"*.{json,md,yml,yaml}": ["biome format --write"]
 }
