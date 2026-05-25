@@ -12,7 +12,8 @@
 		"typecheck": "turbo run typecheck",
 		"format": "biome format --write .",
 		"format:check": "biome format .",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"seed": "pnpm exec tsx apps/api/src/scripts/seed.ts"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.8.3",
@@ -22,7 +23,8 @@
 		"cz-conventional-changelog": "^3.3.0",
 		"husky": "^9.0.11",
 		"lint-staged": "^15.2.7",
-		"turbo": "^2.0.4"
+		"turbo": "^2.0.4",
+		"tsx": "^4.6.1"
 	},
 	"engines": {
 		"node": ">=20.0.0",
