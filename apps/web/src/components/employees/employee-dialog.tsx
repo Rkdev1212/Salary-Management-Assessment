@@ -1,11 +1,15 @@
+import React, { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { employeeService } from "@/services/employee.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EmployeeStatus, EmploymentType, SalaryBand } from "@repo/types";
-import type { Employee } from "@repo/types";
+import type {
+	Employee,
+	CreateEmployeeDto,
+	UpdateEmployeeDto,
+} from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Mail, X } from "lucide-react";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -16,17 +20,33 @@ const employeeSchema = z.object({
 	phone: z.string().min(10, "Phone must be at least 10 characters"),
 	country: z.string().min(1, "Country is required"),
 	currency: z.string().length(3, "Currency must be 3 characters"),
-	salary: z.coerce.number().positive("Salary must be positive"),
+
+	salary: z.coerce
+		.number({
+			required_error: "Salary is required",
+			invalid_type_error: "Salary must be a number",
+		})
+		.positive("Salary must be positive"),
+
 	department: z.string().min(1, "Department is required"),
 	jobTitle: z.string().min(1, "Job title is required"),
+
 	employmentType: z.nativeEnum(EmploymentType),
+
 	joiningDate: z.string().min(1, "Joining date is required"),
+
 	status: z.nativeEnum(EmployeeStatus),
+
 	salaryBand: z.nativeEnum(SalaryBand),
+
 	bonusEligible: z.boolean(),
+
 	location: z.string().min(1, "Location is required"),
+
 	timezone: z.string().min(1, "Timezone is required"),
+
 	managerName: z.string().optional(),
+
 	performanceRating: z.coerce.number().min(1).max(5).optional().nullable(),
 });
 
@@ -37,8 +57,6 @@ interface EmployeeDialogProps {
 	onClose: () => void;
 	employee: Employee | null;
 }
-
-// ── Reusable field components ────────────────────────────────────────────────
 
 function Field({
 	label,
@@ -53,7 +71,7 @@ function Field({
 }) {
 	return (
 		<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-			<label
+			<div
 				style={{
 					fontSize: "0.88rem",
 					fontWeight: 500,
@@ -67,10 +85,18 @@ function Field({
 				{required && (
 					<span style={{ color: "#ef4444", fontSize: "0.8rem" }}>*</span>
 				)}
-			</label>
+			</div>
+
 			{children}
+
 			{error && (
-				<p style={{ fontSize: "0.75rem", color: "#ef4444", margin: 0 }}>
+				<p
+					style={{
+						fontSize: "0.75rem",
+						color: "#ef4444",
+						margin: 0,
+					}}
+				>
 					{error}
 				</p>
 			)}
@@ -93,25 +119,37 @@ const inputStyle: React.CSSProperties = {
 	fontFamily: "inherit",
 };
 
-function StyledInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+const StyledInput = React.forwardRef<
+	HTMLInputElement,
+	React.InputHTMLAttributes<HTMLInputElement>
+>(({ onBlur, onFocus, style, ...rest }, ref) => {
 	return (
 		<input
-			{...props}
-			style={{ ...inputStyle, ...props.style }}
+			ref={ref}
+			{...rest}
+			style={{ ...inputStyle, ...style }}
 			onFocus={(e) => {
-				e.target.style.borderColor = "#93c5fd";
+				e.currentTarget.style.borderColor = "#93c5fd";
+				onFocus?.(e);
 			}}
 			onBlur={(e) => {
-				e.target.style.borderColor = "#e5e7eb";
+				e.currentTarget.style.borderColor = "#e5e7eb";
+				onBlur?.(e);
 			}}
 		/>
 	);
-}
+});
 
-function StyledSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+StyledInput.displayName = "StyledInput";
+
+const StyledSelect = React.forwardRef<
+	HTMLSelectElement,
+	React.SelectHTMLAttributes<HTMLSelectElement>
+>(({ onBlur, onFocus, style, ...rest }, ref) => {
 	return (
 		<select
-			{...props}
+			ref={ref}
+			{...rest}
 			style={{
 				...inputStyle,
 				appearance: "none",
@@ -120,19 +158,21 @@ function StyledSelect(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
 				backgroundPosition: "right 12px center",
 				paddingRight: 36,
 				cursor: "pointer",
-				...props.style,
+				...style,
 			}}
 			onFocus={(e) => {
-				(e.target as HTMLSelectElement).style.borderColor = "#93c5fd";
+				e.currentTarget.style.borderColor = "#93c5fd";
+				onFocus?.(e);
 			}}
 			onBlur={(e) => {
-				(e.target as HTMLSelectElement).style.borderColor = "#e5e7eb";
+				e.currentTarget.style.borderColor = "#e5e7eb";
+				onBlur?.(e);
 			}}
 		/>
 	);
-}
+});
 
-// ── Dialog ───────────────────────────────────────────────────────────────────
+StyledSelect.displayName = "StyledSelect";
 
 export function EmployeeDialog({
 	open,
@@ -149,15 +189,41 @@ export function EmployeeDialog({
 		formState: { errors },
 	} = useForm<EmployeeForm>({
 		resolver: zodResolver(employeeSchema),
-		defaultValues: { status: EmployeeStatus.ACTIVE, bonusEligible: false },
+		mode: "onSubmit",
+		reValidateMode: "onChange",
+
+		defaultValues: {
+			firstName: "",
+			lastName: "",
+			email: "",
+			phone: "",
+			country: "",
+			currency: "USD",
+			salary: undefined,
+			department: "",
+			jobTitle: "",
+			employmentType: EmploymentType.FULL_TIME,
+			joiningDate: new Date().toISOString().split("T")[0],
+			status: EmployeeStatus.ACTIVE,
+			salaryBand: SalaryBand.MID,
+			bonusEligible: false,
+			location: "",
+			timezone: "America/New_York",
+			managerName: undefined,
+			performanceRating: undefined,
+		},
 	});
 
 	useEffect(() => {
+		if (!open) return;
+
 		if (employee) {
 			reset({
 				...employee,
 				joiningDate: new Date(employee.joiningDate).toISOString().split("T")[0],
+
 				performanceRating: employee.performanceRating ?? undefined,
+
 				managerName: employee.managerName ?? undefined,
 			});
 		} else {
@@ -168,7 +234,7 @@ export function EmployeeDialog({
 				phone: "",
 				country: "",
 				currency: "USD",
-				salary: 0,
+				salary: undefined,
 				department: "",
 				jobTitle: "",
 				employmentType: EmploymentType.FULL_TIME,
@@ -178,17 +244,28 @@ export function EmployeeDialog({
 				bonusEligible: false,
 				location: "",
 				timezone: "America/New_York",
+				managerName: undefined,
+				performanceRating: undefined,
 			});
 		}
-	}, [employee, reset]);
+	}, [open, employee, reset]);
 
 	const createMutation = useMutation({
 		mutationFn: employeeService.create,
+
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["employees"] });
-			toast({ title: "Success", description: "Employee created successfully" });
+			queryClient.invalidateQueries({
+				queryKey: ["employees"],
+			});
+
+			toast({
+				title: "Success",
+				description: "Employee created successfully",
+			});
+
 			onClose();
 		},
+
 		onError: () =>
 			toast({
 				variant: "destructive",
@@ -198,13 +275,27 @@ export function EmployeeDialog({
 	});
 
 	const updateMutation = useMutation({
-		mutationFn: ({ id, data }: { id: string; data: Partial<EmployeeForm> }) =>
-			employeeService.update(id, data),
+		mutationFn: ({
+			id,
+			data,
+		}: {
+			id: string;
+			data: UpdateEmployeeDto;
+		}) => employeeService.update(id, data),
+
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["employees"] });
-			toast({ title: "Success", description: "Employee updated successfully" });
+			queryClient.invalidateQueries({
+				queryKey: ["employees"],
+			});
+
+			toast({
+				title: "Success",
+				description: "Employee updated successfully",
+			});
+
 			onClose();
 		},
+
 		onError: () =>
 			toast({
 				variant: "destructive",
@@ -222,10 +313,14 @@ export function EmployeeDialog({
 			performanceRating: data.performanceRating || null,
 			managerName: data.managerName || null,
 		};
+
 		if (employee) {
-			updateMutation.mutate({ id: employee.id, data: payload });
+			updateMutation.mutate({
+				id: employee.id,
+				data: payload as UpdateEmployeeDto,
+			});
 		} else {
-			createMutation.mutate(payload);
+			createMutation.mutate(payload as CreateEmployeeDto);
 		}
 	};
 
@@ -233,24 +328,22 @@ export function EmployeeDialog({
 
 	return (
 		<>
-			{/* Backdrop */}
-			<div
+			<button
+				type="button"
 				onClick={onClose}
-				onKeyDown={(e) => {
-					if (e.key === "Escape") onClose();
-				}}
-				role="button"
-				tabIndex={0}
 				style={{
 					position: "fixed",
 					inset: 0,
 					background: "rgba(15,23,42,0.45)",
 					backdropFilter: "blur(3px)",
 					zIndex: 100,
+					border: "none",
+					padding: 0,
+					cursor: "default",
 				}}
+				aria-label="Close dialog"
 			/>
 
-			{/* Modal */}
 			<div
 				style={{
 					position: "fixed",
@@ -258,18 +351,16 @@ export function EmployeeDialog({
 					left: "50%",
 					transform: "translate(-50%,-50%)",
 					zIndex: 101,
-					width: "min(680px, 95vw)",
+					width: "min(680px,95vw)",
 					maxHeight: "90vh",
 					background: "#fff",
 					borderRadius: 20,
 					boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
 					display: "flex",
 					flexDirection: "column",
-					fontFamily: "'Segoe UI', system-ui, sans-serif",
 					overflow: "hidden",
 				}}
 			>
-				{/* ── Header ── */}
 				<div
 					style={{
 						display: "flex",
@@ -277,7 +368,6 @@ export function EmployeeDialog({
 						justifyContent: "space-between",
 						padding: "22px 28px 18px",
 						borderBottom: "1px solid #f1f5f9",
-						flexShrink: 0,
 					}}
 				>
 					<h2
@@ -285,11 +375,11 @@ export function EmployeeDialog({
 							margin: 0,
 							fontSize: "1.15rem",
 							fontWeight: 700,
-							color: "#0f172a",
 						}}
 					>
 						{employee ? "Edit Employee" : "Add Employee"}
 					</h2>
+
 					<button
 						type="button"
 						onClick={onClose}
@@ -303,291 +393,173 @@ export function EmployeeDialog({
 							alignItems: "center",
 							justifyContent: "center",
 							cursor: "pointer",
-							color: "#64748b",
-							transition: "all 0.15s",
-						}}
-						onMouseEnter={(e) => {
-							(e.currentTarget as HTMLElement).style.background = "#fee2e2";
-							(e.currentTarget as HTMLElement).style.color = "#ef4444";
-						}}
-						onMouseLeave={(e) => {
-							(e.currentTarget as HTMLElement).style.background = "#f8fafc";
-							(e.currentTarget as HTMLElement).style.color = "#64748b";
 						}}
 					>
 						<X size={16} />
 					</button>
 				</div>
 
-				{/* ── Scrollable body ── */}
-				<div style={{ overflowY: "auto", padding: "24px 28px", flex: 1 }}>
+				<div
+					style={{
+						overflowY: "auto",
+						padding: "24px 28px",
+						flex: 1,
+					}}
+				>
 					<form
 						id="employee-form"
 						onSubmit={handleSubmit(onSubmit)}
-						style={{ display: "flex", flexDirection: "column", gap: 18 }}
+						style={{
+							display: "flex",
+							flexDirection: "column",
+							gap: 18,
+						}}
 					>
-						{/* Row 1 — Name */}
-						<div
-							style={{
-								display: "grid",
-								gridTemplateColumns: "1fr 1fr",
-								gap: 14,
-							}}
-							className="form-grid"
+						<Field
+							label="First Name"
+							required
+							error={errors.firstName?.message}
 						>
-							<Field
-								label="First Name"
-								required
-								error={errors.firstName?.message}
-							>
-								<StyledInput
-									id="firstName"
-									{...register("firstName")}
-									placeholder="John"
-								/>
-							</Field>
-							<Field
-								label="Last Name"
-								required
-								error={errors.lastName?.message}
-							>
-								<StyledInput
-									id="lastName"
-									{...register("lastName")}
-									placeholder="Smith"
-								/>
-							</Field>
-						</div>
+							<StyledInput placeholder="John" {...register("firstName")} />
+						</Field>
 
-						{/* Row 2 — Contact */}
-						<div
-							style={{
-								display: "grid",
-								gridTemplateColumns: "1fr 1fr",
-								gap: 14,
-							}}
-							className="form-grid"
+						<Field label="Last Name" required error={errors.lastName?.message}>
+							<StyledInput placeholder="Smith" {...register("lastName")} />
+						</Field>
+
+						<Field label="Email" required error={errors.email?.message}>
+							<StyledInput
+								type="email"
+								placeholder="john@company.com"
+								{...register("email")}
+							/>
+						</Field>
+
+						<Field label="Phone" required error={errors.phone?.message}>
+							<StyledInput
+								placeholder="+1 234 567 890"
+								{...register("phone")}
+							/>
+						</Field>
+
+						<Field
+							label="Department"
+							required
+							error={errors.department?.message}
 						>
-							<Field label="Email" required error={errors.email?.message}>
-								<StyledInput
-									id="email"
-									type="email"
-									{...register("email")}
-									placeholder="john@company.com"
-								/>
-							</Field>
-							<Field label="Phone" required error={errors.phone?.message}>
-								<StyledInput
-									id="phone"
-									{...register("phone")}
-									placeholder="+1 234 567 8900"
-								/>
-							</Field>
-						</div>
+							<StyledInput
+								placeholder="Engineering"
+								{...register("department")}
+							/>
+						</Field>
 
-						{/* Row 3 — Role */}
-						<div
-							style={{
-								display: "grid",
-								gridTemplateColumns: "1fr 1fr",
-								gap: 14,
-							}}
-							className="form-grid"
+						<Field label="Job Title" required error={errors.jobTitle?.message}>
+							<StyledInput
+								placeholder="Senior Developer"
+								{...register("jobTitle")}
+							/>
+						</Field>
+
+						<Field label="Country" required error={errors.country?.message}>
+							<StyledInput placeholder="US" {...register("country")} />
+						</Field>
+
+						<Field label="Currency" required error={errors.currency?.message}>
+							<StyledInput
+								maxLength={3}
+								placeholder="USD"
+								{...register("currency")}
+							/>
+						</Field>
+
+						<Field label="Salary" required error={errors.salary?.message}>
+							<StyledInput
+								type="number"
+								placeholder="75000"
+								{...register("salary")}
+							/>
+						</Field>
+
+						<Field label="Employment Type" required>
+							<StyledSelect {...register("employmentType")}>
+								{Object.values(EmploymentType).map((type) => (
+									<option key={type} value={type}>
+										{type}
+									</option>
+								))}
+							</StyledSelect>
+						</Field>
+
+						<Field
+							label="Joining Date"
+							required
+							error={errors.joiningDate?.message}
 						>
-							<Field
-								label="Department"
-								required
-								error={errors.department?.message}
-							>
-								<StyledInput
-									id="department"
-									{...register("department")}
-									placeholder="Engineering"
-								/>
-							</Field>
-							<Field
-								label="Job Title"
-								required
-								error={errors.jobTitle?.message}
-							>
-								<StyledInput
-									id="jobTitle"
-									{...register("jobTitle")}
-									placeholder="Senior Developer"
-								/>
-							</Field>
-						</div>
+							<StyledInput type="date" {...register("joiningDate")} />
+						</Field>
 
-						{/* Row 4 — Pay */}
-						<div
-							style={{
-								display: "grid",
-								gridTemplateColumns: "1fr 1fr 1fr",
-								gap: 14,
-							}}
-							className="form-grid-3"
-						>
-							<Field label="Country" required error={errors.country?.message}>
-								<StyledInput
-									id="country"
-									{...register("country")}
-									placeholder="US"
-								/>
-							</Field>
-							<Field label="Currency" required error={errors.currency?.message}>
-								<StyledInput
-									id="currency"
-									{...register("currency")}
-									maxLength={3}
-									placeholder="USD"
-								/>
-							</Field>
-							<Field label="Salary" required error={errors.salary?.message}>
-								<StyledInput
-									id="salary"
-									type="number"
-									{...register("salary")}
-									placeholder="75000"
-								/>
-							</Field>
-						</div>
+						<Field label="Status" required>
+							<StyledSelect {...register("status")}>
+								{Object.values(EmployeeStatus).map((status) => (
+									<option key={status} value={status}>
+										{status}
+									</option>
+								))}
+							</StyledSelect>
+						</Field>
 
-						{/* Row 5 — Employment */}
-						<div
-							style={{
-								display: "grid",
-								gridTemplateColumns: "1fr 1fr",
-								gap: 14,
-							}}
-							className="form-grid"
-						>
-							<Field label="Employment Type" required>
-								<StyledSelect {...register("employmentType")}>
-									{Object.values(EmploymentType).map((t) => (
-										<option key={t} value={t}>
-											{t.replace(/_/g, " ")}
-										</option>
-									))}
-								</StyledSelect>
-							</Field>
-							<Field label="Salary Band" required>
-								<StyledSelect {...register("salaryBand")}>
-									{Object.values(SalaryBand).map((b) => (
-										<option key={b} value={b}>
-											{b}
-										</option>
-									))}
-								</StyledSelect>
-							</Field>
-						</div>
+						<Field label="Salary Band" required>
+							<StyledSelect {...register("salaryBand")}>
+								{Object.values(SalaryBand).map((band) => (
+									<option key={band} value={band}>
+										{band}
+									</option>
+								))}
+							</StyledSelect>
+						</Field>
 
-						{/* Row 6 — Dates / Status */}
-						<div
-							style={{
-								display: "grid",
-								gridTemplateColumns: "1fr 1fr",
-								gap: 14,
-							}}
-							className="form-grid"
-						>
-							<Field
-								label="Joining Date"
-								required
-								error={errors.joiningDate?.message}
-							>
-								<StyledInput
-									id="joiningDate"
-									type="date"
-									{...register("joiningDate")}
-								/>
-							</Field>
-							<Field label="Status" required>
-								<StyledSelect {...register("status")}>
-									{Object.values(EmployeeStatus).map((s) => (
-										<option key={s} value={s}>
-											{s.replace(/_/g, " ")}
-										</option>
-									))}
-								</StyledSelect>
-							</Field>
-						</div>
+						<Field label="Location" required error={errors.location?.message}>
+							<StyledInput placeholder="New York" {...register("location")} />
+						</Field>
 
-						{/* Row 7 — Location */}
-						<div
-							style={{
-								display: "grid",
-								gridTemplateColumns: "1fr 1fr",
-								gap: 14,
-							}}
-							className="form-grid"
-						>
-							<Field label="Location" required error={errors.location?.message}>
-								<StyledInput
-									id="location"
-									{...register("location")}
-									placeholder="New York, NY"
-								/>
-							</Field>
-							<Field label="Timezone" required error={errors.timezone?.message}>
-								<StyledInput
-									id="timezone"
-									{...register("timezone")}
-									placeholder="America/New_York"
-								/>
-							</Field>
-						</div>
+						<Field label="Timezone" required error={errors.timezone?.message}>
+							<StyledInput
+								placeholder="America/New_York"
+								{...register("timezone")}
+							/>
+						</Field>
 
-						{/* Info notice — matches image */}
 						<div
 							style={{
 								display: "flex",
-								alignItems: "flex-start",
-								gap: 12,
-								padding: "14px 16px",
+								alignItems: "center",
+								gap: 10,
+								padding: 14,
 								background: "#f8fafc",
 								borderRadius: 12,
-								border: "1.5px solid #e2e8f0",
 							}}
 						>
-							<div
-								style={{
-									flexShrink: 0,
-									marginTop: 1,
-									width: 32,
-									height: 32,
-									background: "#eff6ff",
-									borderRadius: 8,
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-								}}
-							>
-								<Mail size={16} color="#1a7fd4" />
-							</div>
+							<Mail size={18} />
 							<p
 								style={{
 									margin: 0,
 									fontSize: "0.85rem",
 									color: "#64748b",
-									lineHeight: 1.6,
 								}}
 							>
-								The system generates a temporary password and emails the login
-								link to the employee.
+								System will send login details automatically.
 							</p>
 						</div>
 					</form>
 				</div>
 
-				{/* ── Footer ── */}
 				<div
 					style={{
 						display: "flex",
 						justifyContent: "flex-end",
-						gap: 10,
+						gap: 12,
 						padding: "18px 28px",
 						borderTop: "1px solid #f1f5f9",
-						flexShrink: 0,
 					}}
 				>
 					<button
@@ -596,26 +568,14 @@ export function EmployeeDialog({
 						style={{
 							padding: "10px 24px",
 							borderRadius: 10,
-							border: "1.5px solid #e2e8f0",
+							border: "1px solid #e2e8f0",
 							background: "#fff",
-							color: "#475569",
-							fontSize: "0.9rem",
-							fontWeight: 500,
 							cursor: "pointer",
-							transition: "all 0.15s",
-							fontFamily: "inherit",
-						}}
-						onMouseEnter={(e) => {
-							(e.currentTarget as HTMLElement).style.background = "#f8fafc";
-							(e.currentTarget as HTMLElement).style.borderColor = "#cbd5e1";
-						}}
-						onMouseLeave={(e) => {
-							(e.currentTarget as HTMLElement).style.background = "#fff";
-							(e.currentTarget as HTMLElement).style.borderColor = "#e2e8f0";
 						}}
 					>
 						Cancel
 					</button>
+
 					<button
 						type="submit"
 						form="employee-form"
@@ -624,42 +584,19 @@ export function EmployeeDialog({
 							padding: "10px 28px",
 							borderRadius: 10,
 							border: "none",
-							background: isPending
-								? "#7fb8e8"
-								: "linear-gradient(135deg,#1a7fd4,#0f5fa8)",
+							background: "linear-gradient(135deg,#1a7fd4,#0f5fa8)",
 							color: "#fff",
-							fontSize: "0.9rem",
-							fontWeight: 600,
-							cursor: isPending ? "not-allowed" : "pointer",
-							boxShadow: isPending ? "none" : "0 3px 10px rgba(26,127,212,0.3)",
-							transition: "opacity 0.15s",
-							fontFamily: "inherit",
-						}}
-						onMouseEnter={(e) => {
-							if (!isPending)
-								(e.currentTarget as HTMLElement).style.opacity = "0.9";
-						}}
-						onMouseLeave={(e) => {
-							(e.currentTarget as HTMLElement).style.opacity = "1";
+							cursor: "pointer",
 						}}
 					>
 						{isPending
-							? "Saving…"
+							? "Saving..."
 							: employee
 								? "Update Employee"
 								: "Add Employee"}
 					</button>
 				</div>
 			</div>
-
-			{/* Responsive grid styles */}
-			<style>{`
-        @media (max-width: 540px) {
-          .form-grid, .form-grid-3 {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
 		</>
 	);
 }

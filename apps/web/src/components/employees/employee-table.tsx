@@ -1,6 +1,6 @@
-import type { Employee, PaginatedResponse } from "@repo/types";
+import type { Employee, EmployeeStatus, PaginatedResponse } from "@repo/types";
 import { formatCurrency, formatDate } from "@repo/utils";
-import { Edit, Power, Trash2, X } from "lucide-react";
+import { Edit, Power, RotateCcw, X } from "lucide-react";
 import { useState } from "react";
 
 interface EmployeeTableProps {
@@ -10,118 +10,94 @@ interface EmployeeTableProps {
 	onPageChange: (page: number) => void;
 	onEdit: (employee: Employee) => void;
 	onDelete: (id: string) => void;
-	onToggleStatus: (id: string, currentStatus: string) => void;
+	onToggleStatus: (id: string, currentStatus: EmployeeStatus) => void;
 }
 
+// ── Avatar ───────────────────────────────────────────────────────────────────
 function Avatar({ name }: { name: string }) {
-	const initials = name
-		.split(" ")
-		.map((n) => n[0])
-		.join("")
-		.toUpperCase()
-		.slice(0, 1);
+	const initial = name.trim()[0]?.toUpperCase() ?? "?";
 
-	const colors: Record<string, string> = {
-		A: "#dbeafe",
-		B: "#ede9fe",
-		C: "#dcfce7",
-		D: "#fef9c3",
-		E: "#ffedd5",
-		F: "#fce7f3",
-		G: "#e0f2fe",
-		H: "#f0fdf4",
-		I: "#fdf2f8",
-		J: "#ecfdf5",
-		K: "#fff7ed",
-		L: "#f0f9ff",
-		M: "#fef3c7",
-		N: "#f5f3ff",
-		O: "#fdf4ff",
-		P: "#f0fdf4",
-		Q: "#eff6ff",
-		R: "#fef2f2",
-		S: "#f8fafc",
-		T: "#ede9fe",
-		U: "#dbeafe",
-		V: "#dcfce7",
-		W: "#fef9c3",
-		X: "#ffedd5",
-		Y: "#fce7f3",
-		Z: "#e0f2fe",
-	};
-	const textColors: Record<string, string> = {
-		A: "#1d4ed8",
-		B: "#7c3aed",
-		C: "#16a34a",
-		D: "#ca8a04",
-		E: "#ea580c",
-		F: "#db2777",
-		G: "#0284c7",
-		H: "#15803d",
-		I: "#9d174d",
-		J: "#047857",
-		K: "#c2410c",
-		L: "#0369a1",
-		M: "#b45309",
-		N: "#6d28d9",
-		O: "#a21caf",
-		P: "#15803d",
-		Q: "#1d4ed8",
-		R: "#dc2626",
-		S: "#475569",
-		T: "#7c3aed",
-		U: "#1d4ed8",
-		V: "#16a34a",
-		W: "#ca8a04",
-		X: "#ea580c",
-		Y: "#db2777",
-		Z: "#0284c7",
+	const palettes: Record<string, [string, string]> = {
+		A: ["#dbeafe", "#1d4ed8"],
+		B: ["#ede9fe", "#7c3aed"],
+		C: ["#dcfce7", "#16a34a"],
+		D: ["#fef9c3", "#ca8a04"],
+		E: ["#ffedd5", "#ea580c"],
+		F: ["#fce7f3", "#db2777"],
+		G: ["#e0f2fe", "#0284c7"],
+		H: ["#f0fdf4", "#15803d"],
+		I: ["#fdf2f8", "#9d174d"],
+		J: ["#ecfdf5", "#047857"],
+		K: ["#fff7ed", "#c2410c"],
+		L: ["#f0f9ff", "#0369a1"],
+		M: ["#fef3c7", "#b45309"],
+		N: ["#f5f3ff", "#6d28d9"],
+		O: ["#fdf4ff", "#a21caf"],
+		P: ["#f0fdf4", "#15803d"],
+		Q: ["#eff6ff", "#1d4ed8"],
+		R: ["#fef2f2", "#dc2626"],
+		S: ["#f8fafc", "#475569"],
+		T: ["#ede9fe", "#7c3aed"],
+		U: ["#dbeafe", "#1d4ed8"],
+		V: ["#dcfce7", "#16a34a"],
+		W: ["#fef9c3", "#ca8a04"],
+		X: ["#ffedd5", "#ea580c"],
+		Y: ["#fce7f3", "#db2777"],
+		Z: ["#e0f2fe", "#0284c7"],
 	};
 
-	const bg = colors[initials] ?? "#dbeafe";
-	const color = textColors[initials] ?? "#1d4ed8";
+	const [bg, color] = palettes[initial] ?? ["#dbeafe", "#1d4ed8"];
 
 	return (
 		<div
 			style={{
-				width: 36,
-				height: 36,
+				width: 34,
+				height: 34,
 				borderRadius: "50%",
 				background: bg,
 				color,
 				fontWeight: 700,
-				fontSize: "0.88rem",
+				fontSize: "0.85rem",
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
 				flexShrink: 0,
 			}}
 		>
-			{initials}
+			{initial}
 		</div>
 	);
 }
 
+// ── RoleBadge ────────────────────────────────────────────────────────────────
 function RoleBadge({ role }: { role: string }) {
-	const map: Record<string, { bg: string; color: string }> = {
-		ADMIN: { bg: "#f3e8ff", color: "#9333ea" },
-		MANAGER: { bg: "#dbeafe", color: "#1d4ed8" },
-		EMPLOYEE: { bg: "#f0f9ff", color: "#0284c7" },
-		HR: { bg: "#fef3c7", color: "#b45309" },
-		FINANCE: { bg: "#dcfce7", color: "#16a34a" },
+	const map: Record<string, [string, string]> = {
+		ADMIN: ["#f3e8ff", "#9333ea"],
+		"SUPER ADMIN": ["#ede9fe", "#7c3aed"],
+		MANAGER: ["#dbeafe", "#1d4ed8"],
+		EMPLOYEE: ["#f0f9ff", "#0284c7"],
+		HR: ["#fef3c7", "#b45309"],
+		FINANCE: ["#dcfce7", "#16a34a"],
+		EDITOR: ["#fdf4ff", "#a21caf"],
+		VIEWER: ["#f8fafc", "#475569"],
+		REVIEWER: ["#f0fdf4", "#059669"],
+		"BRAND MANAGER": ["#fff7ed", "#c2410c"],
 	};
-	const style = map[role] ?? { bg: "#f1f5f9", color: "#475569" };
-	const label = role.charAt(0) + role.slice(1).toLowerCase();
+
+	const key = role.toUpperCase();
+	const [bg, color] = map[key] ?? ["#f1f5f9", "#475569"];
+	const label = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+
 	return (
 		<span
 			style={{
+				display: "inline-block",
 				padding: "3px 12px",
 				borderRadius: 999,
-				background: style.bg,
-				color: style.color,
+				background: bg,
+				color,
 				fontSize: "0.78rem",
 				fontWeight: 500,
-				border: `1px solid ${style.color}22`,
 				whiteSpace: "nowrap",
 			}}
 		>
@@ -130,11 +106,13 @@ function RoleBadge({ role }: { role: string }) {
 	);
 }
 
+// ── StatusBadge ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
 	const active = status === "ACTIVE";
 	return (
 		<span
 			style={{
+				display: "inline-block",
 				padding: "3px 12px",
 				borderRadius: 999,
 				background: active ? "#f0fdf4" : "#f8fafc",
@@ -150,7 +128,8 @@ function StatusBadge({ status }: { status: string }) {
 	);
 }
 
-function IconBtn({
+// ── ActionIcon ───────────────────────────────────────────────────────────────
+function ActionIcon({
 	children,
 	onClick,
 	danger,
@@ -170,13 +149,15 @@ function IconBtn({
 				background: "none",
 				border: "none",
 				cursor: "pointer",
-				padding: 6,
-				borderRadius: 8,
+				width: 30,
+				height: 30,
+				borderRadius: 6,
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
 				color: danger ? "#ef4444" : "#94a3b8",
 				transition: "color 0.15s, background 0.15s",
+				flexShrink: 0,
 			}}
 			onMouseEnter={(e) => {
 				(e.currentTarget as HTMLElement).style.color = danger
@@ -198,7 +179,7 @@ function IconBtn({
 	);
 }
 
-// Confirmation Dialog Component
+// ── ConfirmDialog ────────────────────────────────────────────────────────────
 function ConfirmDialog({
 	open,
 	onClose,
@@ -219,284 +200,142 @@ function ConfirmDialog({
 	if (!open) return null;
 
 	return (
-		<>
-			{/* Backdrop */}
-			<div
-				onClick={onClose}
-				onKeyDown={(e) => {
-					if (e.key === "Escape") onClose();
-				}}
-				role="button"
-				tabIndex={0}
-				style={{
-					position: "fixed",
-					inset: 0,
-					background: "rgba(15,23,42,0.5)",
-					backdropFilter: "blur(4px)",
-					zIndex: 200,
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-				}}
-			>
-				{/* Dialog */}
-				<div
-					onClick={(e) => e.stopPropagation()}
-					onKeyDown={(e) => e.stopPropagation()}
-					role="dialog"
-					tabIndex={-1}
-					style={{
-						background: "#fff",
-						borderRadius: 16,
-						boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
-						width: "min(440px, 90vw)",
-						overflow: "hidden",
-						fontFamily: "'Segoe UI', system-ui, sans-serif",
-					}}
-				>
-					{/* Header */}
-					<div
-						style={{
-							padding: "20px 24px",
-							borderBottom: "1px solid #f1f5f9",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "space-between",
-						}}
-					>
-						<h3
-							style={{
-								margin: 0,
-								fontSize: "1.1rem",
-								fontWeight: 700,
-								color: "#0f172a",
-							}}
-						>
-							{title}
-						</h3>
-						<button
-							type="button"
-							onClick={onClose}
-							style={{
-								background: "none",
-								border: "none",
-								cursor: "pointer",
-								padding: 6,
-								borderRadius: 6,
-								display: "flex",
-								color: "#64748b",
-							}}
-						>
-							<X size={18} />
-						</button>
-					</div>
-
-					{/* Body */}
-					<div
-						style={{
-							padding: "24px",
-							fontSize: "0.95rem",
-							color: "#475569",
-							lineHeight: 1.6,
-						}}
-					>
-						{message}
-					</div>
-
-					{/* Footer */}
-					<div
-						style={{
-							padding: "16px 24px",
-							borderTop: "1px solid #f1f5f9",
-							display: "flex",
-							gap: 10,
-							justifyContent: "flex-end",
-						}}
-					>
-						<button
-							type="button"
-							onClick={onClose}
-							style={{
-								padding: "9px 20px",
-								borderRadius: 10,
-								border: "1.5px solid #e2e8f0",
-								background: "#fff",
-								color: "#475569",
-								fontSize: "0.9rem",
-								fontWeight: 500,
-								cursor: "pointer",
-								fontFamily: "inherit",
-							}}
-						>
-							Cancel
-						</button>
-						<button
-							type="button"
-							onClick={() => {
-								onConfirm();
-								onClose();
-							}}
-							style={{
-								padding: "9px 24px",
-								borderRadius: 10,
-								border: "none",
-								background: isDanger
-									? "linear-gradient(135deg,#ef4444,#dc2626)"
-									: "linear-gradient(135deg,#1a7fd4,#0f5fa8)",
-								color: "#fff",
-								fontSize: "0.9rem",
-								fontWeight: 600,
-								cursor: "pointer",
-								boxShadow: isDanger
-									? "0 3px 10px rgba(239,68,68,0.3)"
-									: "0 3px 10px rgba(26,127,212,0.3)",
-								fontFamily: "inherit",
-							}}
-						>
-							{confirmText}
-						</button>
-					</div>
-				</div>
-			</div>
-		</>
-	);
-}
-
-// Mobile card view
-function EmployeeCard({
-	employee,
-	onEdit,
-	onDelete,
-	onToggleStatus,
-}: {
-	employee: Employee;
-	onEdit: (e: Employee) => void;
-	onDelete: (id: string) => void;
-	onToggleStatus: (id: string, status: string) => void;
-}) {
-	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-	return (
-		<div
+		<button
+			type="button"
+			onClick={onClose}
 			style={{
-				background: "#fff",
-				borderRadius: 14,
-				border: "1px solid #e8edf3",
-				padding: "16px",
+				position: "fixed",
+				inset: 0,
+				background: "rgba(15,23,42,0.45)",
+				backdropFilter: "blur(4px)",
+				zIndex: 200,
 				display: "flex",
-				flexDirection: "column",
-				gap: 12,
+				alignItems: "center",
+				justifyContent: "center",
+				border: "none",
+				padding: 0,
+				cursor: "default",
 			}}
+			aria-label="Close dialog"
 		>
 			<div
+				onClick={(e) => e.stopPropagation()}
+				onKeyDown={(e) => e.stopPropagation()}
+				role="presentation"
 				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: 12,
-					justifyContent: "space-between",
+					background: "#fff",
+					borderRadius: 16,
+					boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+					width: "min(440px, 90vw)",
+					overflow: "hidden",
+					fontFamily: "'Segoe UI', system-ui, sans-serif",
 				}}
 			>
-				<div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-					<Avatar name={employee.fullName} />
-					<div>
-						<p
-							style={{
-								fontWeight: 600,
-								fontSize: "0.93rem",
-								color: "#1e293b",
-								margin: 0,
-							}}
-						>
-							{employee.fullName}
-						</p>
-						<p style={{ fontSize: "0.78rem", color: "#94a3b8", margin: 0 }}>
-							{employee.email}
-						</p>
-					</div>
+				<div
+					style={{
+						padding: "20px 24px",
+						borderBottom: "1px solid #f1f5f9",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+					}}
+				>
+					<h3
+						style={{
+							margin: 0,
+							fontSize: "1rem",
+							fontWeight: 700,
+							color: "#0f172a",
+						}}
+					>
+						{title}
+					</h3>
+					<button
+						type="button"
+						onClick={onClose}
+						style={{
+							background: "none",
+							border: "none",
+							cursor: "pointer",
+							padding: 6,
+							borderRadius: 6,
+							display: "flex",
+							color: "#94a3b8",
+						}}
+					>
+						<X size={16} />
+					</button>
 				</div>
-				<StatusBadge status={employee.status} />
-			</div>
 
-			<div
-				style={{
-					display: "grid",
-					gridTemplateColumns: "1fr 1fr",
-					gap: "8px 16px",
-				}}
-			>
-				{[
-					["Department", employee.department],
-					["Job Title", employee.jobTitle],
-					["Country", employee.country],
-					["Salary", formatCurrency(employee.salary, employee.currency)],
-					["Joined", formatDate(employee.joiningDate)],
-				].map(([label, value]) => (
-					<div key={label}>
-						<p
-							style={{
-								fontSize: "0.7rem",
-								color: "#94a3b8",
-								margin: "0 0 2px",
-								textTransform: "uppercase",
-								letterSpacing: "0.05em",
-							}}
-						>
-							{label}
-						</p>
-						<p
-							style={{
-								fontSize: "0.85rem",
-								color: "#334155",
-								margin: 0,
-								fontWeight: 500,
-							}}
-						>
-							{value}
-						</p>
-					</div>
-				))}
-			</div>
-
-			<div
-				style={{
-					display: "flex",
-					gap: 8,
-					borderTop: "1px solid #f1f5f9",
-					paddingTop: 10,
-				}}
-			>
-				<RoleBadge role={employee.department ?? "EMPLOYEE"} />
-				<div style={{ flex: 1 }} />
-				<IconBtn onClick={() => onEdit(employee)} title="Edit">
-					<Edit size={16} />
-				</IconBtn>
-				<IconBtn
-					onClick={() => onToggleStatus(employee.id, employee.status)}
-					title={employee.status === "ACTIVE" ? "Deactivate" : "Activate"}
+				<div
+					style={{
+						padding: "20px 24px",
+						fontSize: "0.9rem",
+						color: "#64748b",
+						lineHeight: 1.6,
+					}}
 				>
-					<Power size={16} />
-				</IconBtn>
-				<IconBtn
-					onClick={() => setShowDeleteConfirm(true)}
-					danger
-					title="Delete Permanently"
-				>
-					<Trash2 size={16} />
-				</IconBtn>
-			</div>
+					{message}
+				</div>
 
-			<ConfirmDialog
-				open={showDeleteConfirm}
-				onClose={() => setShowDeleteConfirm(false)}
-				onConfirm={() => onDelete(employee.id)}
-				title="Delete Employee"
-				message={`Are you sure you want to permanently delete ${employee.fullName}? This action cannot be undone.`}
-				confirmText="Delete"
-				isDanger
-			/>
-		</div>
+				<div
+					style={{
+						padding: "14px 24px",
+						borderTop: "1px solid #f1f5f9",
+						display: "flex",
+						gap: 10,
+						justifyContent: "flex-end",
+					}}
+				>
+					<button
+						type="button"
+						onClick={onClose}
+						style={{
+							padding: "8px 18px",
+							borderRadius: 8,
+							border: "1.5px solid #e2e8f0",
+							background: "#fff",
+							color: "#475569",
+							fontSize: "0.875rem",
+							fontWeight: 500,
+							cursor: "pointer",
+							fontFamily: "inherit",
+						}}
+					>
+						Cancel
+					</button>
+					<button
+						type="button"
+						onClick={() => {
+							onConfirm();
+							onClose();
+						}}
+						style={{
+							padding: "8px 20px",
+							borderRadius: 8,
+							border: "none",
+							background: isDanger
+								? "linear-gradient(135deg,#ef4444,#dc2626)"
+								: "linear-gradient(135deg,#3b9eff,#1a7fd4)",
+							color: "#fff",
+							fontSize: "0.875rem",
+							fontWeight: 600,
+							cursor: "pointer",
+							fontFamily: "inherit",
+							boxShadow: isDanger
+								? "0 3px 8px rgba(239,68,68,0.25)"
+								: "0 3px 8px rgba(26,127,212,0.25)",
+						}}
+					>
+						{confirmText}
+					</button>
+				</div>
+			</div>
+		</button>
 	);
 }
 
+// ── EmployeeTable ─────────────────────────────────────────────────────────────
 export function EmployeeTable({
 	data,
 	isLoading,
@@ -511,21 +350,22 @@ export function EmployeeTable({
 		employeeId: string;
 		employeeName: string;
 	}>({ open: false, employeeId: "", employeeName: "" });
+
 	if (isLoading) {
 		return (
 			<div
 				style={{
 					background: "#fff",
-					borderRadius: 16,
+					borderRadius: 12,
 					border: "1px solid #e8edf3",
-					padding: "48px",
+					padding: "60px 48px",
 					textAlign: "center",
 				}}
 			>
 				<div
 					style={{
-						width: 36,
-						height: 36,
+						width: 32,
+						height: 32,
 						margin: "0 auto 12px",
 						border: "3px solid #e2e8f0",
 						borderTopColor: "#1a7fd4",
@@ -533,7 +373,7 @@ export function EmployeeTable({
 						animation: "spin 0.8s linear infinite",
 					}}
 				/>
-				<p style={{ color: "#94a3b8", fontSize: "0.9rem", margin: 0 }}>
+				<p style={{ color: "#94a3b8", fontSize: "0.875rem", margin: 0 }}>
 					Loading employees…
 				</p>
 				<style>{"@keyframes spin { to { transform: rotate(360deg); } }"}</style>
@@ -546,51 +386,60 @@ export function EmployeeTable({
 			<div
 				style={{
 					background: "#fff",
-					borderRadius: 16,
+					borderRadius: 12,
 					border: "1px solid #e8edf3",
-					padding: "48px",
+					padding: "60px 48px",
 					textAlign: "center",
 				}}
 			>
-				<p style={{ color: "#94a3b8", margin: 0 }}>No employees found</p>
+				<p style={{ color: "#94a3b8", fontSize: "0.875rem", margin: 0 }}>
+					No employees found.
+				</p>
 			</div>
 		);
 	}
 
 	const thStyle: React.CSSProperties = {
-		padding: "12px 16px",
+		padding: "11px 16px",
 		textAlign: "left",
-		fontSize: "0.75rem",
+		fontSize: "0.72rem",
 		fontWeight: 600,
 		color: "#94a3b8",
 		textTransform: "uppercase",
-		letterSpacing: "0.06em",
+		letterSpacing: "0.07em",
 		whiteSpace: "nowrap",
+		background: "transparent",
+		borderBottom: "1px solid #f0f4f8",
 	};
 
 	return (
 		<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-			{/* ── Desktop table ── */}
 			<div
-				className="hidden-mobile"
 				style={{
 					background: "#fff",
-					borderRadius: 16,
+					borderRadius: 12,
 					border: "1px solid #e8edf3",
 					overflow: "hidden",
 				}}
 			>
-				<div style={{ overflowX: "auto" }}>
-					<table style={{ width: "100%", borderCollapse: "collapse" }}>
+				<div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+					<table
+						style={{
+							width: "100%",
+							borderCollapse: "collapse",
+							minWidth: 780,
+							fontFamily: "'Segoe UI', system-ui, sans-serif",
+						}}
+					>
 						<thead>
-							<tr style={{ borderBottom: "1px solid #f1f5f9" }}>
+							<tr>
 								<th style={thStyle}>User</th>
 								<th style={thStyle}>Department</th>
 								<th style={thStyle}>Job Title</th>
 								<th style={thStyle}>Country</th>
 								<th style={{ ...thStyle, textAlign: "right" }}>Salary</th>
 								<th style={{ ...thStyle, textAlign: "center" }}>Status</th>
-								<th style={{ ...thStyle, textAlign: "center" }}>Joined</th>
+								<th style={{ ...thStyle, textAlign: "left" }}>Joined</th>
 								<th style={{ ...thStyle, textAlign: "right" }}>Actions</th>
 							</tr>
 						</thead>
@@ -601,30 +450,31 @@ export function EmployeeTable({
 									style={{
 										borderBottom:
 											i < data.length - 1 ? "1px solid #f8fafc" : "none",
-										transition: "background 0.12s",
+										transition: "background 0.1s",
 									}}
-									onMouseEnter={(e) =>
-										((e.currentTarget as HTMLElement).style.background =
-											"#fafbfc")
-									}
-									onMouseLeave={(e) =>
-										((e.currentTarget as HTMLElement).style.background =
-											"transparent")
-									}
+									onMouseEnter={(e) => {
+										const target = e.currentTarget as HTMLElement;
+										target.style.background = "#fafbfd";
+									}}
+									onMouseLeave={(e) => {
+										const target = e.currentTarget as HTMLElement;
+										target.style.background = "transparent";
+									}}
 								>
 									{/* User */}
-									<td style={{ padding: "14px 16px" }}>
+									<td style={{ padding: "13px 16px" }}>
 										<div
-											style={{ display: "flex", alignItems: "center", gap: 12 }}
+											style={{ display: "flex", alignItems: "center", gap: 11 }}
 										>
 											<Avatar name={employee.fullName} />
 											<div>
 												<p
 													style={{
 														fontWeight: 600,
-														fontSize: "0.9rem",
-														color: "#1e293b",
+														fontSize: "0.875rem",
+														color: "#0f172a",
 														margin: 0,
+														lineHeight: 1.3,
 													}}
 												>
 													{employee.fullName}
@@ -634,6 +484,7 @@ export function EmployeeTable({
 														fontSize: "0.75rem",
 														color: "#94a3b8",
 														margin: 0,
+														lineHeight: 1.3,
 													}}
 												>
 													{employee.email}
@@ -642,55 +493,57 @@ export function EmployeeTable({
 										</div>
 									</td>
 
-									{/* Department as role badge */}
-									<td style={{ padding: "14px 16px" }}>
-										<RoleBadge
-											role={employee.department?.toUpperCase() ?? "EMPLOYEE"}
-										/>
+									{/* Department */}
+									<td style={{ padding: "13px 16px" }}>
+										<RoleBadge role={employee.department ?? "Employee"} />
 									</td>
 
+									{/* Job Title */}
 									<td
 										style={{
-											padding: "14px 16px",
-											fontSize: "0.87rem",
+											padding: "13px 16px",
+											fontSize: "0.85rem",
 											color: "#475569",
 										}}
 									>
 										{employee.jobTitle}
 									</td>
 
+									{/* Country */}
 									<td
 										style={{
-											padding: "14px 16px",
-											fontSize: "0.87rem",
+											padding: "13px 16px",
+											fontSize: "0.85rem",
 											color: "#475569",
 										}}
 									>
 										{employee.country}
 									</td>
 
+									{/* Salary */}
 									<td
 										style={{
-											padding: "14px 16px",
+											padding: "13px 16px",
 											textAlign: "right",
-											fontSize: "0.87rem",
+											fontSize: "0.85rem",
 											fontWeight: 600,
-											color: "#1e293b",
+											color: "#0f172a",
 											whiteSpace: "nowrap",
 										}}
 									>
 										{formatCurrency(employee.salary, employee.currency)}
 									</td>
 
-									<td style={{ padding: "14px 16px", textAlign: "center" }}>
+									{/* Status */}
+									<td style={{ padding: "13px 16px", textAlign: "center" }}>
 										<StatusBadge status={employee.status} />
 									</td>
 
+									{/* Joined */}
 									<td
 										style={{
-											padding: "14px 16px",
-											textAlign: "center",
-											fontSize: "0.8rem",
+											padding: "13px 16px",
+											fontSize: "0.82rem",
 											color: "#64748b",
 											whiteSpace: "nowrap",
 										}}
@@ -698,20 +551,32 @@ export function EmployeeTable({
 										{formatDate(employee.joiningDate)}
 									</td>
 
-									{/* Actions */}
-									<td style={{ padding: "14px 16px" }}>
+									{/* Actions — edit | reset | power (icon-only, matching screenshot) */}
+									<td style={{ padding: "13px 16px" }}>
 										<div
 											style={{
 												display: "flex",
 												alignItems: "center",
 												justifyContent: "flex-end",
-												gap: 2,
+												gap: 0,
 											}}
 										>
-											<IconBtn onClick={() => onEdit(employee)} title="Edit">
+											<ActionIcon onClick={() => onEdit(employee)} title="Edit">
 												<Edit size={15} />
-											</IconBtn>
-											<IconBtn
+											</ActionIcon>
+											<ActionIcon
+												onClick={() =>
+													setDeleteConfirm({
+														open: true,
+														employeeId: employee.id,
+														employeeName: employee.fullName,
+													})
+												}
+												title="Reset / Delete"
+											>
+												<RotateCcw size={15} />
+											</ActionIcon>
+											<ActionIcon
 												onClick={() =>
 													onToggleStatus(employee.id, employee.status)
 												}
@@ -720,22 +585,10 @@ export function EmployeeTable({
 														? "Deactivate"
 														: "Activate"
 												}
+												danger={employee.status !== "ACTIVE"}
 											>
 												<Power size={15} />
-											</IconBtn>
-											<IconBtn
-												onClick={() =>
-													setDeleteConfirm({
-														open: true,
-														employeeId: employee.id,
-														employeeName: employee.fullName,
-													})
-												}
-												danger
-												title="Delete Permanently"
-											>
-												<Trash2 size={15} />
-											</IconBtn>
+											</ActionIcon>
 										</div>
 									</td>
 								</tr>
@@ -745,7 +598,7 @@ export function EmployeeTable({
 				</div>
 			</div>
 
-			{/* Delete Confirmation Dialog */}
+			{/* Delete Confirm */}
 			<ConfirmDialog
 				open={deleteConfirm.open}
 				onClose={() =>
@@ -758,23 +611,7 @@ export function EmployeeTable({
 				isDanger
 			/>
 
-			{/* ── Mobile cards ── */}
-			<div
-				className="show-mobile"
-				style={{ display: "flex", flexDirection: "column", gap: 10 }}
-			>
-				{data.map((employee) => (
-					<EmployeeCard
-						key={employee.id}
-						employee={employee}
-						onEdit={onEdit}
-						onDelete={onDelete}
-						onToggleStatus={onToggleStatus}
-					/>
-				))}
-			</div>
-
-			{/* ── Pagination ── */}
+			{/* Pagination */}
 			{pagination && pagination.totalPages > 1 && (
 				<div
 					style={{
@@ -783,22 +620,23 @@ export function EmployeeTable({
 						justifyContent: "space-between",
 						flexWrap: "wrap",
 						gap: 12,
+						padding: "4px 0",
 					}}
 				>
-					<p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: 0 }}>
+					<p style={{ fontSize: "0.82rem", color: "#94a3b8", margin: 0 }}>
 						Showing{" "}
-						<span style={{ color: "#1e293b", fontWeight: 600 }}>
+						<span style={{ color: "#0f172a", fontWeight: 600 }}>
 							{(pagination.page - 1) * pagination.limit + 1}–
 							{Math.min(pagination.page * pagination.limit, pagination.total)}
 						</span>{" "}
 						of{" "}
-						<span style={{ color: "#1e293b", fontWeight: 600 }}>
+						<span style={{ color: "#0f172a", fontWeight: 600 }}>
 							{pagination.total}
 						</span>{" "}
 						employees
 					</p>
 
-					<div style={{ display: "flex", gap: 8 }}>
+					<div style={{ display: "flex", gap: 6 }}>
 						{[
 							{
 								label: "← Previous",
@@ -817,31 +655,31 @@ export function EmployeeTable({
 								disabled={disabled}
 								onClick={() => onPageChange(page)}
 								style={{
-									padding: "7px 16px",
-									borderRadius: 10,
+									padding: "6px 14px",
+									borderRadius: 8,
 									border: "1px solid #e2e8f0",
 									background: disabled ? "#f8fafc" : "#fff",
 									color: disabled ? "#cbd5e1" : "#475569",
-									fontSize: "0.85rem",
+									fontSize: "0.82rem",
 									fontWeight: 500,
 									cursor: disabled ? "not-allowed" : "pointer",
 									transition: "all 0.15s",
+									fontFamily: "inherit",
 								}}
 								onMouseEnter={(e) => {
 									if (!disabled) {
-										(e.currentTarget as HTMLElement).style.background =
-											"#eff6ff";
-										(e.currentTarget as HTMLElement).style.color = "#1a7fd4";
-										(e.currentTarget as HTMLElement).style.borderColor =
-											"#bfdbfe";
+										const target = e.currentTarget as HTMLElement;
+										target.style.background = "#eff6ff";
+										target.style.color = "#1a7fd4";
+										target.style.borderColor = "#bfdbfe";
 									}
 								}}
 								onMouseLeave={(e) => {
 									if (!disabled) {
-										(e.currentTarget as HTMLElement).style.background = "#fff";
-										(e.currentTarget as HTMLElement).style.color = "#475569";
-										(e.currentTarget as HTMLElement).style.borderColor =
-											"#e2e8f0";
+										const target = e.currentTarget as HTMLElement;
+										target.style.background = "#fff";
+										target.style.color = "#475569";
+										target.style.borderColor = "#e2e8f0";
 									}
 								}}
 							>
@@ -851,17 +689,6 @@ export function EmployeeTable({
 					</div>
 				</div>
 			)}
-
-			<style>{`
-        @media (max-width: 768px) {
-          .hidden-mobile { display: none !important; }
-          .show-mobile { display: flex !important; }
-        }
-        @media (min-width: 769px) {
-          .hidden-mobile { display: block !important; }
-          .show-mobile { display: none !important; }
-        }
-      `}</style>
 		</div>
 	);
 }

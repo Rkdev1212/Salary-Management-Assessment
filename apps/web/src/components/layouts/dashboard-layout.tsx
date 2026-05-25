@@ -1,22 +1,29 @@
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
 import {
+	Bell,
 	ChevronLeft,
 	ChevronRight,
+	HelpCircle,
 	LayoutDashboard,
 	LogOut,
-	Menu,
 	Users,
-	X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
+// ── Navigation structure ──────────────────────────────────────────────────────
 const navigation = [
 	{ name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
 	{ name: "Employees", href: "/employees", icon: Users },
 ];
 
+const bottomNavigation = [
+	{ name: "Notifications", icon: Bell },
+	{ name: "Help", icon: HelpCircle },
+];
+
+// ── Hooks ────────────────────────────────────────────────────────────────────
 function useWindowWidth() {
 	const [width, setWidth] = useState(window.innerWidth);
 	useEffect(() => {
@@ -27,6 +34,85 @@ function useWindowWidth() {
 	return width;
 }
 
+// ── NavItem ──────────────────────────────────────────────────────────────────
+function NavItem({
+	item,
+	collapsed,
+	pathname,
+	onNavigate,
+}: {
+	item: { name: string; href: string; icon: React.ElementType };
+	collapsed: boolean;
+	pathname: string;
+	onNavigate: () => void;
+}) {
+	const isActive = pathname === item.href || pathname.startsWith(item.href);
+	const Icon = item.icon;
+
+	// ── Collapsed: just icon ──
+	if (collapsed) {
+		return (
+			<Link
+				to={item.href}
+				onClick={onNavigate}
+				title={item.name}
+				style={{
+					width: 44,
+					height: 44,
+					borderRadius: 12,
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					margin: "0 auto",
+					textDecoration: "none",
+					background: isActive ? "#1a7fd4" : "transparent",
+					color: isActive ? "#fff" : "#94a3b8",
+					transition: "all 0.2s",
+				}}
+			>
+				<Icon size={20} />
+			</Link>
+		);
+	}
+
+	// ── Expanded: pill-style button ──
+	return (
+		<Link
+			to={item.href}
+			onClick={onNavigate}
+			style={{
+				display: "flex",
+				alignItems: "center",
+				gap: 12,
+				padding: "11px 18px",
+				borderRadius: 16,
+				textDecoration: "none",
+				background: isActive ? "#1a7fd4" : "transparent",
+				color: isActive ? "#fff" : "#94a3b8",
+				fontWeight: isActive ? 600 : 500,
+				fontSize: "0.95rem",
+				transition: "all 0.2s",
+			}}
+			onMouseEnter={(e) => {
+				if (!isActive) {
+					(e.currentTarget as HTMLElement).style.background = "#f1f5f9";
+					(e.currentTarget as HTMLElement).style.color = "#64748b";
+				}
+			}}
+			onMouseLeave={(e) => {
+				if (!isActive) {
+					(e.currentTarget as HTMLElement).style.background = "transparent";
+					(e.currentTarget as HTMLElement).style.color = "#94a3b8";
+				}
+			}}
+		>
+			<Icon size={20} />
+			{item.name}
+		</Link>
+	);
+}
+
+// ── SidebarContent ───────────────────────────────────────────────────────────
 function SidebarContent({
 	collapsed,
 	setCollapsed,
@@ -41,16 +127,22 @@ function SidebarContent({
 	onNavigate: () => void;
 }) {
 	return (
-		<div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-			{/* ── Header ── */}
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				height: "100%",
+				background: "#fafbfc",
+			}}
+		>
+			{/* ── Logo / Header ── */}
 			<div
 				style={{
 					display: "flex",
 					alignItems: "center",
 					justifyContent: collapsed ? "center" : "space-between",
-					padding: collapsed ? "18px 0" : "16px 16px 16px 18px",
-					borderBottom: "1px solid #f0f4f8",
-					minHeight: 68,
+					padding: collapsed ? "20px 0" : "20px 16px",
+					minHeight: 76,
 					position: "relative",
 				}}
 			>
@@ -58,35 +150,53 @@ function SidebarContent({
 					style={{
 						display: "flex",
 						alignItems: "center",
-						gap: 11,
+						gap: 12,
 						overflow: "hidden",
 					}}
 				>
-					{/* Logo icon */}
+					{/* App icon — rounded square blue */}
 					<div
 						style={{
-							width: 40,
-							height: 40,
-							borderRadius: 11,
-							background: "linear-gradient(135deg,#1a7fd4,#0f5fa8)",
+							width: 48,
+							height: 48,
+							borderRadius: 14,
+							background: "linear-gradient(135deg,#3b9eff,#1a7fd4)",
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
 							flexShrink: 0,
-							boxShadow: "0 4px 12px rgba(26,127,212,0.28)",
+							boxShadow: "0 4px 14px rgba(26,127,212,0.25)",
 						}}
 					>
-						<svg width="22" height="22" viewBox="0 0 38 38" fill="none">
-							<circle cx="12" cy="12" r="4" fill="white" opacity="0.9" />
-							<circle cx="26" cy="12" r="4" fill="white" opacity="0.9" />
-							<circle cx="12" cy="26" r="4" fill="white" opacity="0.9" />
-							<circle cx="26" cy="26" r="4" fill="white" opacity="0.9" />
+						<svg
+							width="26"
+							height="26"
+							viewBox="0 0 38 38"
+							fill="none"
+							role="img"
+							aria-label="App Logo"
+						>
+							<title>App Logo</title>
 							<path
-								d="M12 12L26 26M26 12L12 26"
+								d="M8 10 C8 10 14 6 19 10 C24 14 30 10 30 10"
 								stroke="white"
-								strokeWidth="2.5"
+								strokeWidth="3"
 								strokeLinecap="round"
-								opacity="0.6"
+								fill="none"
+							/>
+							<path
+								d="M8 19 C8 19 14 15 19 19 C24 23 30 19 30 19"
+								stroke="white"
+								strokeWidth="3"
+								strokeLinecap="round"
+								fill="none"
+							/>
+							<path
+								d="M8 28 C8 28 14 24 19 28 C24 32 30 28 30 28"
+								stroke="white"
+								strokeWidth="3"
+								strokeLinecap="round"
+								fill="none"
 							/>
 						</svg>
 					</div>
@@ -96,16 +206,16 @@ function SidebarContent({
 							<div
 								style={{
 									fontWeight: 700,
-									fontSize: "0.97rem",
-									color: "#1e293b",
+									fontSize: "1.1rem",
+									color: "#0f172a",
 									whiteSpace: "nowrap",
 								}}
 							>
-								Salary Manager
+								SMS
 							</div>
 							<div
 								style={{
-									fontSize: "0.72rem",
+									fontSize: "0.75rem",
 									color: "#94a3b8",
 									whiteSpace: "nowrap",
 								}}
@@ -116,144 +226,169 @@ function SidebarContent({
 					)}
 				</div>
 
-				{/* Collapse button */}
+				{/* Collapse / expand button */}
 				{!collapsed && (
 					<button
+						type="button"
 						onClick={() => setCollapsed(true)}
 						style={{
-							background: "#f1f5f9",
+							background: "transparent",
 							border: "none",
-							borderRadius: 8,
 							width: 28,
 							height: 28,
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
 							cursor: "pointer",
-							color: "#64748b",
+							color: "#94a3b8",
 							flexShrink: 0,
 						}}
 					>
-						<ChevronLeft size={15} />
-					</button>
-				)}
-
-				{/* Expand pill on edge when collapsed */}
-				{collapsed && (
-					<button
-						onClick={() => setCollapsed(false)}
-						style={{
-							position: "absolute",
-							right: -13,
-							top: 20,
-							background: "#fff",
-							border: "1px solid #e2e8f0",
-							borderRadius: "50%",
-							width: 26,
-							height: 26,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							cursor: "pointer",
-							color: "#64748b",
-							boxShadow: "0 2px 6px rgba(0,0,0,0.09)",
-							zIndex: 10,
-						}}
-					>
-						<ChevronRight size={14} />
+						<ChevronLeft size={18} />
 					</button>
 				)}
 			</div>
 
-			{/* ── Nav ── */}
+			{/* ── Nav items ── */}
 			<nav
 				style={{
 					flex: 1,
-					padding: "14px 10px",
+					padding: collapsed ? "12px 14px" : "12px 16px",
 					display: "flex",
 					flexDirection: "column",
-					gap: 4,
+					gap: 6,
 					overflowY: "auto",
 					overflowX: "hidden",
 				}}
 			>
-				{navigation.map((item) => {
-					const isActive = location.pathname === item.href;
-					return (
-						<Link
-							key={item.name}
-							to={item.href}
-							onClick={onNavigate}
-							title={collapsed ? item.name : undefined}
-							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: 11,
-								padding: collapsed ? "11px 0" : "10px 13px",
-								justifyContent: collapsed ? "center" : "flex-start",
-								borderRadius: 12,
-								textDecoration: "none",
-								fontWeight: isActive ? 600 : 400,
-								fontSize: "0.9rem",
-								color: isActive ? "#fff" : "#475569",
-								background: isActive
-									? "linear-gradient(135deg,#1a7fd4,#0f5fa8)"
-									: "transparent",
-								boxShadow: isActive
-									? "0 3px 10px rgba(26,127,212,0.25)"
-									: "none",
-								transition: "all 0.15s",
-							}}
-							onMouseEnter={(e) => {
-								if (!isActive) {
-									(e.currentTarget as HTMLElement).style.background = "#f1f5f9";
-									(e.currentTarget as HTMLElement).style.color = "#1e293b";
-								}
-							}}
-							onMouseLeave={(e) => {
-								if (!isActive) {
-									(e.currentTarget as HTMLElement).style.background =
-										"transparent";
-									(e.currentTarget as HTMLElement).style.color = "#475569";
-								}
-							}}
-						>
-							<item.icon size={18} />
-							{!collapsed && item.name}
-						</Link>
-					);
-				})}
+				{navigation.map((item) => (
+					<NavItem
+						key={item.name}
+						item={item}
+						collapsed={collapsed}
+						pathname={location.pathname}
+						onNavigate={onNavigate}
+					/>
+				))}
 			</nav>
 
-			{/* ── Logout ── */}
-			<div style={{ padding: "12px 10px", borderTop: "1px solid #f0f4f8" }}>
+			{/* ── Bottom section: Notifications, Help, Logout ── */}
+			<div
+				style={{
+					padding: collapsed ? "16px 14px" : "16px 16px",
+					borderTop: "1px solid #e8edf3",
+					display: "flex",
+					flexDirection: "column",
+					gap: 6,
+				}}
+			>
+				{bottomNavigation.map((item) => {
+					const Icon = item.icon;
+					if (collapsed) {
+						return (
+							<button
+								key={item.name}
+								type="button"
+								title={item.name}
+								style={{
+									width: 44,
+									height: 44,
+									borderRadius: 12,
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+									margin: "0 auto",
+									background: "transparent",
+									border: "none",
+									color: "#94a3b8",
+									cursor: "pointer",
+									transition: "all 0.2s",
+								}}
+								onMouseEnter={(e) => {
+									(e.currentTarget as HTMLElement).style.background = "#f1f5f9";
+									(e.currentTarget as HTMLElement).style.color = "#64748b";
+								}}
+								onMouseLeave={(e) => {
+									(e.currentTarget as HTMLElement).style.background =
+										"transparent";
+									(e.currentTarget as HTMLElement).style.color = "#94a3b8";
+								}}
+							>
+								<Icon size={20} />
+							</button>
+						);
+					}
+					return (
+						<button
+							key={item.name}
+							type="button"
+							style={{
+								width: "100%",
+								display: "flex",
+								alignItems: "center",
+								gap: 12,
+								padding: "11px 18px",
+								borderRadius: 16,
+								border: "none",
+								background: "transparent",
+								color: "#94a3b8",
+								fontWeight: 500,
+								fontSize: "0.95rem",
+								cursor: "pointer",
+								textAlign: "left",
+								transition: "all 0.2s",
+								fontFamily: "inherit",
+							}}
+							onMouseEnter={(e) => {
+								(e.currentTarget as HTMLElement).style.background = "#f1f5f9";
+								(e.currentTarget as HTMLElement).style.color = "#64748b";
+							}}
+							onMouseLeave={(e) => {
+								(e.currentTarget as HTMLElement).style.background =
+									"transparent";
+								(e.currentTarget as HTMLElement).style.color = "#94a3b8";
+							}}
+						>
+							<Icon size={20} />
+							{item.name}
+						</button>
+					);
+				})}
+
+				{/* Logout button */}
 				<button
+					type="button"
 					onClick={onLogout}
 					title={collapsed ? "Logout" : undefined}
 					style={{
-						width: "100%",
+						width: collapsed ? 44 : "100%",
 						display: "flex",
 						alignItems: "center",
-						gap: 11,
-						padding: collapsed ? "11px 0" : "10px 13px",
+						gap: 12,
+						padding: collapsed ? "0" : "11px 18px",
+						height: collapsed ? 44 : "auto",
 						justifyContent: collapsed ? "center" : "flex-start",
-						borderRadius: 12,
+						margin: collapsed ? "0 auto" : "0",
+						borderRadius: 16,
 						border: "none",
-						background: "#fef2f2",
-						color: "#ef4444",
+						background: "transparent",
+						color: "#94a3b8",
 						fontWeight: 500,
-						fontSize: "0.9rem",
+						fontSize: "0.95rem",
 						cursor: "pointer",
-						transition: "background 0.15s",
+						transition: "all 0.2s",
+						fontFamily: "inherit",
 					}}
 					onMouseEnter={(e) => {
-						(e.currentTarget as HTMLElement).style.background = "#fee2e2";
+						(e.currentTarget as HTMLElement).style.background = "#fef2f2";
+						(e.currentTarget as HTMLElement).style.color = "#ef4444";
 					}}
 					onMouseLeave={(e) => {
-						(e.currentTarget as HTMLElement).style.background = "#fef2f2";
+						(e.currentTarget as HTMLElement).style.background = "transparent";
+						(e.currentTarget as HTMLElement).style.color = "#94a3b8";
 					}}
 				>
-					<LogOut size={18} />
+					<LogOut size={20} />
 					{!collapsed && "Logout"}
 				</button>
 			</div>
@@ -261,24 +396,24 @@ function SidebarContent({
 	);
 }
 
+// ── DashboardLayout ──────────────────────────────────────────────────────────
 export function DashboardLayout() {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const { user, logout } = useAuthStore();
+	const { logout } = useAuthStore();
 	const windowWidth = useWindowWidth();
 	const isDesktop = windowWidth >= 1024;
 
 	const [collapsed, setCollapsed] = useState(false);
 	const [mobileOpen, setMobileOpen] = useState(false);
 
-	// Close mobile drawer on route change
 	const { pathname } = location;
-	// biome-ignore lint/correctness/useExhaustiveDependencies: pathname primitive is the only dep needed
+	// biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the only dep needed
 	useEffect(() => {
 		setMobileOpen(false);
 	}, [pathname]);
 
-	const sidebarWidth = collapsed ? 72 : 240;
+	const sidebarWidth = collapsed ? 72 : 220;
 
 	const handleLogout = async () => {
 		try {
@@ -300,32 +435,72 @@ export function DashboardLayout() {
 		>
 			{/* ── Desktop Sidebar ── */}
 			{isDesktop && (
-				<aside
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						bottom: 0,
-						width: sidebarWidth,
-						background: "#fff",
-						borderRight: "1px solid #e8edf3",
-						boxShadow: "2px 0 16px rgba(0,0,0,0.04)",
-						transition: "width 0.22s cubic-bezier(.4,0,.2,1)",
-						zIndex: 50,
-						overflow: "visible",
-					}}
-				>
-					<SidebarContent
-						collapsed={collapsed}
-						setCollapsed={setCollapsed}
-						location={location}
-						onLogout={handleLogout}
-						onNavigate={() => {}}
-					/>
-				</aside>
+				<>
+					<aside
+						style={{
+							position: "fixed",
+							top: 0,
+							left: 0,
+							bottom: 0,
+							width: sidebarWidth,
+							background: "#fafbfc",
+							borderRight: "1px solid #e8edf3",
+							boxShadow: "1px 0 8px rgba(0,0,0,0.02)",
+							transition: "width 0.22s cubic-bezier(.4,0,.2,1)",
+							zIndex: 50,
+							overflow: "visible",
+						}}
+					>
+						<SidebarContent
+							collapsed={collapsed}
+							setCollapsed={setCollapsed}
+							location={location}
+							onLogout={handleLogout}
+							onNavigate={() => {}}
+						/>
+					</aside>
+
+					{/* Toggle button - appears when collapsed */}
+					{collapsed && (
+						<button
+							type="button"
+							onClick={() => setCollapsed(false)}
+							style={{
+								position: "fixed",
+								left: sidebarWidth + 10,
+								top: 32,
+								width: 28,
+								height: 28,
+								borderRadius: "50%",
+								background: "#fff",
+								border: "1px solid #e2e8f0",
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								cursor: "pointer",
+								color: "#64748b",
+								boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+								zIndex: 51,
+								transition: "all 0.2s",
+							}}
+							onMouseEnter={(e) => {
+								const target = e.currentTarget as HTMLElement;
+								target.style.background = "#f8fafc";
+								target.style.color = "#1a7fd4";
+							}}
+							onMouseLeave={(e) => {
+								const target = e.currentTarget as HTMLElement;
+								target.style.background = "#fff";
+								target.style.color = "#64748b";
+							}}
+						>
+							<ChevronRight size={16} />
+						</button>
+					)}
+				</>
 			)}
 
-			{/* ── Mobile: overlay + drawer ── */}
+			{/* ── Mobile overlay + drawer ── */}
 			{!isDesktop && (
 				<>
 					{mobileOpen && (
@@ -339,7 +514,7 @@ export function DashboardLayout() {
 							style={{
 								position: "fixed",
 								inset: 0,
-								background: "rgba(0,0,0,0.4)",
+								background: "rgba(0,0,0,0.35)",
 								zIndex: 49,
 								backdropFilter: "blur(2px)",
 							}}
@@ -351,10 +526,10 @@ export function DashboardLayout() {
 							top: 0,
 							left: 0,
 							bottom: 0,
-							width: 240,
-							background: "#fff",
+							width: 220,
+							background: "#fafbfc",
 							borderRight: "1px solid #e8edf3",
-							boxShadow: "2px 0 20px rgba(0,0,0,0.1)",
+							boxShadow: "2px 0 16px rgba(0,0,0,0.06)",
 							zIndex: 50,
 							transform: mobileOpen ? "translateX(0)" : "translateX(-100%)",
 							transition: "transform 0.22s cubic-bezier(.4,0,.2,1)",
@@ -371,98 +546,27 @@ export function DashboardLayout() {
 				</>
 			)}
 
-			{/* ── Mobile top bar ── */}
-			{!isDesktop && (
-				<div
-					style={{
-						position: "fixed",
-						top: 0,
-						left: 0,
-						right: 0,
-						height: 56,
-						background: "#fff",
-						borderBottom: "1px solid #e8edf3",
-						display: "flex",
-						alignItems: "center",
-						padding: "0 16px",
-						gap: 14,
-						zIndex: 40,
-						boxShadow: "0 1px 8px rgba(0,0,0,0.06)",
-					}}
-				>
-					<button
-						onClick={() => setMobileOpen((v) => !v)}
-						style={{
-							background: "none",
-							border: "none",
-							cursor: "pointer",
-							color: "#475569",
-							display: "flex",
-							alignItems: "center",
-							padding: 6,
-							borderRadius: 8,
-						}}
-					>
-						{mobileOpen ? <X size={22} /> : <Menu size={22} />}
-					</button>
-
-					<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-						<div
-							style={{
-								width: 32,
-								height: 32,
-								borderRadius: 9,
-								background: "linear-gradient(135deg,#1a7fd4,#0f5fa8)",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-							}}
-						>
-							<svg width="17" height="17" viewBox="0 0 38 38" fill="none">
-								<circle cx="12" cy="12" r="4" fill="white" opacity="0.9" />
-								<circle cx="26" cy="12" r="4" fill="white" opacity="0.9" />
-								<circle cx="12" cy="26" r="4" fill="white" opacity="0.9" />
-								<circle cx="26" cy="26" r="4" fill="white" opacity="0.9" />
-								<path
-									d="M12 12L26 26M26 12L12 26"
-									stroke="white"
-									strokeWidth="2.5"
-									strokeLinecap="round"
-									opacity="0.6"
-								/>
-							</svg>
-						</div>
-						<div>
-							<div
-								style={{
-									fontWeight: 700,
-									fontSize: "0.92rem",
-									color: "#1e293b",
-								}}
-							>
-								Salary Manager
-							</div>
-							<div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>
-								Admin Panel
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
 			{/* ── Main content ── */}
 			<main
 				style={{
 					marginLeft: isDesktop ? sidebarWidth : 0,
-					paddingTop: isDesktop ? 0 : 56,
 					transition: "margin-left 0.22s cubic-bezier(.4,0,.2,1)",
 					minHeight: "100vh",
 				}}
 			>
-				<div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px" }}>
+				<div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 28px" }}>
 					<Outlet />
 				</div>
 			</main>
+
+			<style>{`
+        @media (max-width: 1023px) {
+          .desktop-only { display: none !important; }
+        }
+        @media (min-width: 1024px) {
+          .mobile-only { display: none !important; }
+        }
+      `}</style>
 		</div>
 	);
 }
