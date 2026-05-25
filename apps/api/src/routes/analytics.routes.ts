@@ -1,0 +1,16 @@
+import { Router } from "express";
+import { AnalyticsController } from "../controllers/analytics.controller";
+import { authenticate } from "../middleware/auth";
+
+const router = Router();
+const controller = new AnalyticsController();
+
+// All routes require authentication
+router.use(authenticate);
+
+router.get("/dashboard", controller.getDashboard);
+router.get("/country-salary-stats", controller.getCountrySalaryStats);
+router.get("/job-title-salary-stats", controller.getJobTitleSalaryStats);
+router.get("/department-stats", controller.getDepartmentStats);
+
+export default router;

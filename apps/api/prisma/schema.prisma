@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+enum SalaryBand {
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+  PRINCIPAL
+}
+
+enum UserRole {
+  ADMIN
+  HR_MANAGER
+  EMPLOYEE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  firstName    String
+  lastName     String
+  role         UserRole @default(HR_MANAGER)
+  refreshToken String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([email])
+  @@map("users")
+}
+
+model Employee {
+  id                String         @id @default(cuid())
+  firstName         String
+  lastName          String
+  fullName          String
+  email             String         @unique
+  phone             String
+  country           String
+  currency          String
+  salary            Float
+  department        String
+  jobTitle          String
+  employmentType    EmploymentType
+  joiningDate       DateTime
+  status            EmployeeStatus @default(ACTIVE)
+  managerName       String?
+  performanceRating Float?
+  salaryBand        SalaryBand
+  bonusEligible     Boolean        @default(false)
+  location          String
+  timezone          String
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([email])
+  @@index([country])
+  @@index([department])
+  @@index([jobTitle])
+  @@index([status])
+  @@index([salary])
+  @@index([salaryBand])
+  @@map("employees")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  userId    String?
+  changes   Json?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

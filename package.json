@@ -1,0 +1,32 @@
+{
+	"name": "salary-management-platform",
+	"version": "1.0.0",
+	"private": true,
+	"workspaces": ["apps/*", "packages/*"],
+	"scripts": {
+		"dev": "turbo run dev",
+		"build": "turbo run build",
+		"test": "turbo run test",
+		"test:coverage": "turbo run test:coverage",
+		"lint": "turbo run lint",
+		"typecheck": "turbo run typecheck",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"prepare": "husky install"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.8.3",
+		"@commitlint/cli": "^19.3.0",
+		"@commitlint/config-conventional": "^19.2.2",
+		"commitizen": "^4.3.1",
+		"cz-conventional-changelog": "^3.3.0",
+		"husky": "^9.0.11",
+		"lint-staged": "^15.2.7",
+		"turbo": "^2.0.4"
+	},
+	"engines": {
+		"node": ">=20.0.0",
+		"pnpm": ">=9.0.0"
+	},
+	"packageManager": "pnpm@9.4.0"
+}
