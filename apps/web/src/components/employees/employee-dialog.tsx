@@ -13,8 +13,7 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
+// ── Constants ─────────────────────────────────────────────────────────────────
 const EMPLOYEE_STATUS_OPTIONS = [
 	EmployeeStatus.ACTIVE,
 	EmployeeStatus.INACTIVE,
@@ -39,10 +38,9 @@ const DEFAULT_FORM_VALUES = {
 	timezone: "America/New_York",
 	managerName: undefined as string | undefined,
 	performanceRating: undefined as number | null | undefined,
-};
+} as const;
 
-// ─── Schema ───────────────────────────────────────────────────────────────────
-
+// ── Schema ────────────────────────────────────────────────────────────────────
 const employeeSchema = z.object({
 	firstName: z.string().min(1, "First name is required"),
 	lastName: z.string().min(1, "Last name is required"),
@@ -71,25 +69,33 @@ const employeeSchema = z.object({
 
 type EmployeeFormData = z.infer<typeof employeeSchema>;
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ── Shared input styles ───────────────────────────────────────────────────────
+const BASE_INPUT_STYLE: React.CSSProperties = {
+	width: "100%",
+	height: 40,
+	padding: "0 12px",
+	borderRadius: 8,
+	border: "1.5px solid #e2e8f0",
+	fontSize: "0.875rem",
+	color: "#1e293b",
+	background: "#fff",
+	outline: "none",
+	boxSizing: "border-box",
+	fontFamily: "inherit",
+	transition: "border-color 0.15s, box-shadow 0.15s",
+};
 
-const styles = {
-	input: {
-		width: "100%",
-		height: 42,
-		padding: "0 12px",
-		borderRadius: 8,
-		border: "1.5px solid #e2e8f0",
-		fontSize: "0.875rem",
-		color: "#1e293b",
-		background: "#fff",
-		outline: "none",
-		boxSizing: "border-box" as const,
-		fontFamily: "inherit",
-		transition: "border-color 0.15s, box-shadow 0.15s",
-	},
-} as const;
+const FOCUS_STYLE = {
+	borderColor: "#3b82f6",
+	boxShadow: "0 0 0 3px rgba(59,130,246,0.1)",
+};
 
+const BLUR_STYLE = {
+	borderColor: "#e2e8f0",
+	boxShadow: "none",
+};
+
+// ── StyledInput ───────────────────────────────────────────────────────────────
 const StyledInput = React.forwardRef<
 	HTMLInputElement,
 	React.InputHTMLAttributes<HTMLInputElement>
@@ -97,21 +103,20 @@ const StyledInput = React.forwardRef<
 	<input
 		ref={ref}
 		{...rest}
-		style={{ ...styles.input, ...style }}
+		style={{ ...BASE_INPUT_STYLE, ...style }}
 		onFocus={(e) => {
-			e.currentTarget.style.borderColor = "#3b82f6";
-			e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1)";
+			Object.assign(e.currentTarget.style, FOCUS_STYLE);
 			onFocus?.(e);
 		}}
 		onBlur={(e) => {
-			e.currentTarget.style.borderColor = "#e2e8f0";
-			e.currentTarget.style.boxShadow = "none";
+			Object.assign(e.currentTarget.style, BLUR_STYLE);
 			onBlur?.(e);
 		}}
 	/>
 ));
 StyledInput.displayName = "StyledInput";
 
+// ── StyledSelect ──────────────────────────────────────────────────────────────
 const StyledSelect = React.forwardRef<
 	HTMLSelectElement,
 	React.SelectHTMLAttributes<HTMLSelectElement>
@@ -120,7 +125,7 @@ const StyledSelect = React.forwardRef<
 		ref={ref}
 		{...rest}
 		style={{
-			...styles.input,
+			...BASE_INPUT_STYLE,
 			appearance: "none",
 			backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
 			backgroundRepeat: "no-repeat",
@@ -130,36 +135,30 @@ const StyledSelect = React.forwardRef<
 			...style,
 		}}
 		onFocus={(e) => {
-			e.currentTarget.style.borderColor = "#3b82f6";
-			e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1)";
+			Object.assign(e.currentTarget.style, FOCUS_STYLE);
 			onFocus?.(e);
 		}}
 		onBlur={(e) => {
-			e.currentTarget.style.borderColor = "#e2e8f0";
-			e.currentTarget.style.boxShadow = "none";
+			Object.assign(e.currentTarget.style, BLUR_STYLE);
 			onBlur?.(e);
 		}}
 	/>
 ));
 StyledSelect.displayName = "StyledSelect";
 
-function Field({
-	label,
-	required,
-	error,
-	children,
-	fullWidth,
-}: {
+// ── Field ─────────────────────────────────────────────────────────────────────
+interface FieldProps {
 	label: string;
 	required?: boolean;
 	error?: string;
 	children: React.ReactNode;
 	fullWidth?: boolean;
-}) {
+}
+
+function Field({ label, required, error, children, fullWidth }: FieldProps) {
 	const generatedId = React.useId();
-	const controlId = generatedId;
 	const control = React.isValidElement<{ id?: string }>(children)
-		? React.cloneElement(children, { id: children.props.id ?? controlId })
+		? React.cloneElement(children, { id: children.props.id ?? generatedId })
 		: children;
 
 	return (
@@ -172,9 +171,9 @@ function Field({
 			}}
 		>
 			<label
-				htmlFor={controlId}
+				htmlFor={generatedId}
 				style={{
-					fontSize: "0.8rem",
+					fontSize: "0.78rem",
 					fontWeight: 600,
 					color: "#475569",
 					letterSpacing: "0.02em",
@@ -186,7 +185,7 @@ function Field({
 				{label}
 				{required && (
 					<span
-						style={{ color: "#ef4444", fontSize: "0.75rem" }}
+						style={{ color: "#ef4444", fontSize: "0.72rem" }}
 						aria-hidden="true"
 					>
 						*
@@ -197,7 +196,7 @@ function Field({
 			{error && (
 				<p
 					role="alert"
-					style={{ fontSize: "0.72rem", color: "#ef4444", margin: 0 }}
+					style={{ fontSize: "0.7rem", color: "#ef4444", margin: 0 }}
 				>
 					{error}
 				</p>
@@ -206,8 +205,7 @@ function Field({
 	);
 }
 
-// ─── Section divider ──────────────────────────────────────────────────────────
-
+// ── SectionLabel ──────────────────────────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {
 	return (
 		<div
@@ -216,16 +214,17 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 				display: "flex",
 				alignItems: "center",
 				gap: 10,
-				margin: "4px 0 2px",
+				margin: "2px 0",
 			}}
 		>
 			<span
 				style={{
-					fontSize: "0.72rem",
+					fontSize: "0.68rem",
 					fontWeight: 700,
 					color: "#94a3b8",
 					letterSpacing: "0.08em",
 					textTransform: "uppercase",
+					whiteSpace: "nowrap",
 				}}
 			>
 				{children}
@@ -235,16 +234,14 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 	);
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
+// ── Props ─────────────────────────────────────────────────────────────────────
 interface EmployeeDialogProps {
 	open: boolean;
 	onClose: () => void;
 	employee: Employee | null;
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
-
+// ── EmployeeDialog ────────────────────────────────────────────────────────────
 export function EmployeeDialog({
 	open,
 	onClose,
@@ -363,8 +360,8 @@ export function EmployeeDialog({
 					left: "50%",
 					transform: "translate(-50%, -50%)",
 					zIndex: 101,
-					width: "min(720px, 96vw)",
-					maxHeight: "92vh",
+					width: "min(700px, 96vw)",
+					maxHeight: "92dvh",
 					background: "#fff",
 					borderRadius: 16,
 					boxShadow: "0 32px 80px rgba(0,0,0,0.2)",
@@ -373,27 +370,28 @@ export function EmployeeDialog({
 					overflow: "hidden",
 					border: "none",
 					padding: 0,
+					margin: 0,
 				}}
 			>
-				{/* Colored header — matches reference design */}
+				{/* Colored header */}
 				<div
 					style={{
 						background: "linear-gradient(135deg, #1a7fd4 0%, #0f5fa8 100%)",
-						padding: "20px 28px",
+						padding: "18px 24px",
 						position: "relative",
 						overflow: "hidden",
 						flexShrink: 0,
 					}}
 				>
-					{/* Decorative circles for depth */}
+					{/* Decorative circles */}
 					<div
 						aria-hidden="true"
 						style={{
 							position: "absolute",
-							top: -30,
-							right: -30,
-							width: 120,
-							height: 120,
+							top: -28,
+							right: -28,
+							width: 100,
+							height: 100,
 							borderRadius: "50%",
 							background: "rgba(255,255,255,0.08)",
 						}}
@@ -402,10 +400,10 @@ export function EmployeeDialog({
 						aria-hidden="true"
 						style={{
 							position: "absolute",
-							bottom: -20,
-							right: 60,
-							width: 70,
-							height: 70,
+							bottom: -18,
+							right: 56,
+							width: 60,
+							height: 60,
 							borderRadius: "50%",
 							background: "rgba(255,255,255,0.06)",
 						}}
@@ -416,7 +414,7 @@ export function EmployeeDialog({
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "space-between",
-							gap: 16,
+							gap: 14,
 							position: "relative",
 						}}
 					>
@@ -424,29 +422,31 @@ export function EmployeeDialog({
 							style={{
 								display: "flex",
 								alignItems: "center",
-								gap: 12,
+								gap: 11,
 								minWidth: 0,
 							}}
 						>
 							<div
+								aria-hidden="true"
 								style={{
-									width: 40,
-									height: 40,
-									borderRadius: 10,
+									width: 36,
+									height: 36,
+									borderRadius: 9,
 									background: "rgba(255,255,255,0.18)",
 									display: "flex",
 									alignItems: "center",
 									justifyContent: "center",
+									flexShrink: 0,
 								}}
 							>
-								<UserPlus size={20} color="#fff" />
+								<UserPlus size={18} color="#fff" />
 							</div>
 							<div style={{ minWidth: 0 }}>
 								<h2
 									id="dialog-title"
 									style={{
 										margin: 0,
-										fontSize: "1.1rem",
+										fontSize: "1rem",
 										fontWeight: 700,
 										color: "#fff",
 									}}
@@ -456,9 +456,9 @@ export function EmployeeDialog({
 								<p
 									style={{
 										margin: 0,
-										fontSize: "0.8rem",
+										fontSize: "0.75rem",
 										color: "rgba(255,255,255,0.72)",
-										marginTop: 2,
+										marginTop: 1,
 									}}
 								>
 									{isEditing
@@ -476,17 +476,26 @@ export function EmployeeDialog({
 								background: "rgba(255,255,255,0.15)",
 								border: "none",
 								borderRadius: 8,
-								width: 32,
-								height: 32,
+								width: 30,
+								height: 30,
 								display: "flex",
 								alignItems: "center",
 								justifyContent: "center",
 								cursor: "pointer",
 								color: "#fff",
 								flexShrink: 0,
+								transition: "background 0.15s",
+							}}
+							onMouseEnter={(e) => {
+								(e.currentTarget as HTMLElement).style.background =
+									"rgba(255,255,255,0.25)";
+							}}
+							onMouseLeave={(e) => {
+								(e.currentTarget as HTMLElement).style.background =
+									"rgba(255,255,255,0.15)";
 							}}
 						>
-							<X size={16} />
+							<X size={15} aria-hidden="true" />
 						</button>
 					</div>
 				</div>
@@ -495,20 +504,24 @@ export function EmployeeDialog({
 				<div
 					style={{
 						overflowY: "auto",
-						padding: "24px 28px",
+						padding: "20px 24px",
 						flex: 1,
 						minHeight: 0,
 					}}
 				>
+					<style>{`
+						.emp-dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+						@media (max-width: 520px) {
+							.emp-dialog-grid { grid-template-columns: 1fr !important; }
+							.emp-dialog-grid > * { grid-column: 1 !important; }
+						}
+					`}</style>
+
 					<form
 						id="employee-form"
 						onSubmit={handleSubmit(onSubmit)}
 						noValidate
-						style={{
-							display: "grid",
-							gridTemplateColumns: "1fr 1fr",
-							gap: "16px 20px",
-						}}
+						className="emp-dialog-grid"
 					>
 						<SectionLabel>Personal Information</SectionLabel>
 
@@ -571,7 +584,7 @@ export function EmployeeDialog({
 							/>
 						</Field>
 
-						<SectionLabel>Role & Employment</SectionLabel>
+						<SectionLabel>Role &amp; Employment</SectionLabel>
 
 						<Field
 							label="Department"
@@ -628,12 +641,8 @@ export function EmployeeDialog({
 							/>
 						</Field>
 
-						{/* <Field label="Manager Name" error={errors.managerName?.message}>
-							<StyledInput
-								placeholder="Jane Doe (optional)"
-								{...register("managerName")}
-							/>
-						</Field> */}
+						{/* Filler to keep grid symmetrical */}
+						<div />
 
 						<SectionLabel>Compensation</SectionLabel>
 
@@ -667,58 +676,6 @@ export function EmployeeDialog({
 							</StyledSelect>
 						</Field>
 
-						<Field
-							label="Performance Rating"
-							error={errors.performanceRating?.message}
-						>
-							<StyledInput
-								type="number"
-								placeholder="1–5 (optional)"
-								min={1}
-								max={5}
-								step={0.1}
-								{...register("performanceRating")}
-							/>
-						</Field>
-
-						{/* Bonus eligible — full width checkbox row */}
-						{/* <div
-							style={{
-								gridColumn: "1 / -1",
-								display: "flex",
-								alignItems: "center",
-								gap: 10,
-								padding: "12px 14px",
-								background: "#f8fafc",
-								borderRadius: 10,
-								border: "1.5px solid #e2e8f0",
-								cursor: "pointer",
-							}}
-						>
-							<input
-								id="bonusEligible"
-								type="checkbox"
-								style={{
-									width: 16,
-									height: 16,
-									cursor: "pointer",
-									accentColor: "#1a7fd4",
-								}}
-								{...register("bonusEligible")}
-							/>
-							<label
-								htmlFor="bonusEligible"
-								style={{
-									fontSize: "0.875rem",
-									color: "#374151",
-									fontWeight: 500,
-									cursor: "pointer",
-								}}
-							>
-								Bonus eligible
-							</label>
-						</div> */}
-
 						<SectionLabel>Locale</SectionLabel>
 
 						<Field
@@ -736,16 +693,17 @@ export function EmployeeDialog({
 					</form>
 				</div>
 
-				{/* Footer actions */}
+				{/* Footer */}
 				<div
 					style={{
 						display: "flex",
 						justifyContent: "flex-end",
-						gap: 10,
-						padding: "16px 28px",
+						gap: 9,
+						padding: "14px 24px",
 						borderTop: "1px solid #f1f5f9",
 						background: "#fafbfc",
 						flexShrink: 0,
+						flexWrap: "wrap",
 					}}
 				>
 					<button
@@ -753,15 +711,16 @@ export function EmployeeDialog({
 						onClick={onClose}
 						disabled={isPending}
 						style={{
-							padding: "10px 22px",
+							padding: "9px 20px",
 							borderRadius: 8,
 							border: "1.5px solid #e2e8f0",
 							background: "#fff",
 							fontSize: "0.875rem",
 							fontWeight: 500,
 							color: "#374151",
-							cursor: "pointer",
+							cursor: isPending ? "not-allowed" : "pointer",
 							fontFamily: "inherit",
+							opacity: isPending ? 0.6 : 1,
 						}}
 					>
 						Cancel
@@ -772,7 +731,7 @@ export function EmployeeDialog({
 						form="employee-form"
 						disabled={isPending}
 						style={{
-							padding: "10px 26px",
+							padding: "9px 22px",
 							borderRadius: 8,
 							border: "none",
 							background: isPending
@@ -784,6 +743,9 @@ export function EmployeeDialog({
 							cursor: isPending ? "not-allowed" : "pointer",
 							fontFamily: "inherit",
 							transition: "opacity 0.15s",
+							boxShadow: isPending
+								? "none"
+								: "0 3px 10px rgba(26,127,212,0.28)",
 						}}
 					>
 						{isPending

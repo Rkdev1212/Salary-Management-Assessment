@@ -17,6 +17,7 @@ import {
 	YAxis,
 } from "recharts";
 
+// ── Design tokens ─────────────────────────────────────────────────────────────
 const CHART_COLORS = [
 	"#3b9eff",
 	"#1a7fd4",
@@ -24,10 +25,9 @@ const CHART_COLORS = [
 	"#38bdf8",
 	"#7dd3fc",
 	"#0ea5e9",
-];
+] as const;
 
-// ── Tooltip style ─────────────────────────────────────────────────────────────
-const tooltipStyle: React.CSSProperties = {
+const TOOLTIP_STYLE: React.CSSProperties = {
 	backgroundColor: "#fff",
 	border: "1px solid #e8edf3",
 	borderRadius: 10,
@@ -45,6 +45,7 @@ function Skeleton({
 }: { w: string | number; h: number; r?: number }) {
 	return (
 		<div
+			aria-hidden="true"
 			style={{
 				width: w,
 				height: h,
@@ -59,6 +60,16 @@ function Skeleton({
 }
 
 // ── StatCard ──────────────────────────────────────────────────────────────────
+interface StatCardProps {
+	title: string;
+	value: string | number;
+	description: string;
+	icon: React.ElementType;
+	iconBg: string;
+	iconColor: string;
+	trend?: { value: string; up: boolean };
+}
+
 function StatCard({
 	title,
 	value,
@@ -67,28 +78,19 @@ function StatCard({
 	iconBg,
 	iconColor,
 	trend,
-}: {
-	title: string;
-	value: string | number;
-	description: string;
-	icon: React.ElementType;
-	iconBg: string;
-	iconColor: string;
-	trend?: { value: string; up: boolean };
-}) {
+}: StatCardProps) {
 	return (
 		<div
 			style={{
 				background: "#fff",
 				borderRadius: 12,
 				border: "1px solid #e8edf3",
-				padding: "20px 22px",
+				padding: "18px 20px",
 				display: "flex",
 				flexDirection: "column",
-				gap: 14,
+				gap: 12,
 			}}
 		>
-			{/* Top row: label + icon */}
 			<div
 				style={{
 					display: "flex",
@@ -98,7 +100,7 @@ function StatCard({
 			>
 				<span
 					style={{
-						fontSize: "0.78rem",
+						fontSize: "0.72rem",
 						fontWeight: 600,
 						color: "#64748b",
 						textTransform: "uppercase",
@@ -108,10 +110,11 @@ function StatCard({
 					{title}
 				</span>
 				<div
+					aria-hidden="true"
 					style={{
-						width: 36,
-						height: 36,
-						borderRadius: 10,
+						width: 34,
+						height: 34,
+						borderRadius: 9,
 						background: iconBg,
 						display: "flex",
 						alignItems: "center",
@@ -119,14 +122,13 @@ function StatCard({
 						flexShrink: 0,
 					}}
 				>
-					<Icon size={17} color={iconColor} strokeWidth={2.2} />
+					<Icon size={16} color={iconColor} strokeWidth={2.2} />
 				</div>
 			</div>
 
-			{/* Value */}
 			<div
 				style={{
-					fontSize: "1.75rem",
+					fontSize: "1.6rem",
 					fontWeight: 700,
 					color: "#0f172a",
 					lineHeight: 1,
@@ -136,12 +138,18 @@ function StatCard({
 				{value}
 			</div>
 
-			{/* Description + optional trend */}
-			<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+			<div
+				style={{
+					display: "flex",
+					alignItems: "center",
+					gap: 8,
+					flexWrap: "wrap",
+				}}
+			>
 				{trend && (
 					<span
 						style={{
-							fontSize: "0.75rem",
+							fontSize: "0.72rem",
 							fontWeight: 600,
 							color: trend.up ? "#16a34a" : "#dc2626",
 							background: trend.up ? "#f0fdf4" : "#fef2f2",
@@ -153,7 +161,7 @@ function StatCard({
 						{trend.up ? "↑" : "↓"} {trend.value}
 					</span>
 				)}
-				<p style={{ margin: 0, fontSize: "0.78rem", color: "#94a3b8" }}>
+				<p style={{ margin: 0, fontSize: "0.75rem", color: "#94a3b8" }}>
 					{description}
 				</p>
 			</div>
@@ -161,18 +169,14 @@ function StatCard({
 	);
 }
 
-// ── SectionCard (chart wrapper) ───────────────────────────────────────────────
-function SectionCard({
-	title,
-	subtitle,
-	children,
-	action,
-}: {
+// ── SectionCard ───────────────────────────────────────────────────────────────
+interface SectionCardProps {
 	title: string;
 	subtitle?: string;
 	children: React.ReactNode;
-	action?: React.ReactNode;
-}) {
+}
+
+function SectionCard({ title, subtitle, children }: SectionCardProps) {
 	return (
 		<div
 			style={{
@@ -182,50 +186,37 @@ function SectionCard({
 				overflow: "hidden",
 			}}
 		>
-			{/* Header */}
 			<div
 				style={{
-					padding: "18px 22px 14px",
+					padding: "16px 20px 12px",
 					borderBottom: "1px solid #f0f4f8",
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-					gap: 12,
 				}}
 			>
-				<div>
-					<h3
-						style={{
-							margin: 0,
-							fontSize: "0.95rem",
-							fontWeight: 700,
-							color: "#0f172a",
-							lineHeight: 1.3,
-						}}
+				<h3
+					style={{
+						margin: 0,
+						fontSize: "0.9rem",
+						fontWeight: 700,
+						color: "#0f172a",
+						lineHeight: 1.3,
+					}}
+				>
+					{title}
+				</h3>
+				{subtitle && (
+					<p
+						style={{ margin: "2px 0 0", fontSize: "0.75rem", color: "#94a3b8" }}
 					>
-						{title}
-					</h3>
-					{subtitle && (
-						<p
-							style={{
-								margin: "3px 0 0",
-								fontSize: "0.78rem",
-								color: "#94a3b8",
-							}}
-						>
-							{subtitle}
-						</p>
-					)}
-				</div>
-				{action}
+						{subtitle}
+					</p>
+				)}
 			</div>
-			{/* Body */}
-			<div style={{ padding: "18px 22px 22px" }}>{children}</div>
+			<div style={{ padding: "16px 20px 20px" }}>{children}</div>
 		</div>
 	);
 }
 
-// ── Custom bar shape with top-only rounded corners ────────────────────────────
+// ── Custom rounded bar ────────────────────────────────────────────────────────
 function RoundedBar(props: {
 	x?: number;
 	y?: number;
@@ -234,7 +225,7 @@ function RoundedBar(props: {
 	fill?: string;
 }) {
 	const { x = 0, y = 0, width = 0, height = 0, fill } = props;
-	const r = 5;
+	const r = 4;
 	if (height <= 0) return null;
 	return (
 		<path
@@ -244,20 +235,121 @@ function RoundedBar(props: {
 	);
 }
 
-// ── Pill badge for chart legend ───────────────────────────────────────────────
 function LegendDot({ color, label }: { color: string; label: string }) {
 	return (
-		<div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+		<div style={{ display: "flex", alignItems: "center", gap: 5 }}>
 			<div
+				aria-hidden="true"
 				style={{
-					width: 8,
-					height: 8,
+					width: 7,
+					height: 7,
 					borderRadius: "50%",
 					background: color,
 					flexShrink: 0,
 				}}
 			/>
-			<span style={{ fontSize: "0.75rem", color: "#64748b" }}>{label}</span>
+			<span style={{ fontSize: "0.72rem", color: "#64748b" }}>{label}</span>
+		</div>
+	);
+}
+
+// ── Loading skeleton layout ───────────────────────────────────────────────────
+const STAT_SKELETON_KEYS = [
+	"stat-total",
+	"stat-average",
+	"stat-median",
+	"stat-departments",
+] as const;
+const CHART_SKELETON_KEYS = [
+	"chart-country",
+	"chart-status",
+	"chart-department",
+	"chart-trend",
+] as const;
+
+function DashboardSkeleton() {
+	return (
+		<div
+			aria-busy="true"
+			aria-label="Loading dashboard"
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				gap: 24,
+				fontFamily: "'Segoe UI', system-ui, sans-serif",
+			}}
+		>
+			<style>
+				{
+					"@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}"
+				}
+			</style>
+			<div>
+				<Skeleton w={140} h={26} r={6} />
+				<div style={{ marginTop: 8 }}>
+					<Skeleton w={220} h={13} r={5} />
+				</div>
+			</div>
+			<div
+				style={{
+					display: "grid",
+					gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+					gap: 14,
+				}}
+			>
+				{STAT_SKELETON_KEYS.map((key) => (
+					<div
+						key={key}
+						style={{
+							background: "#fff",
+							borderRadius: 12,
+							border: "1px solid #e8edf3",
+							padding: "18px 20px",
+							display: "flex",
+							flexDirection: "column",
+							gap: 12,
+						}}
+					>
+						<div style={{ display: "flex", justifyContent: "space-between" }}>
+							<Skeleton w="55%" h={11} r={4} />
+							<Skeleton w={34} h={34} r={9} />
+						</div>
+						<Skeleton w="65%" h={26} r={6} />
+						<Skeleton w="45%" h={11} r={4} />
+					</div>
+				))}
+			</div>
+			<div
+				style={{
+					display: "grid",
+					gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+					gap: 14,
+				}}
+			>
+				{CHART_SKELETON_KEYS.map((key) => (
+					<div
+						key={key}
+						style={{
+							background: "#fff",
+							borderRadius: 12,
+							border: "1px solid #e8edf3",
+							overflow: "hidden",
+						}}
+					>
+						<div
+							style={{
+								padding: "16px 20px 12px",
+								borderBottom: "1px solid #f0f4f8",
+							}}
+						>
+							<Skeleton w="40%" h={15} r={5} />
+						</div>
+						<div style={{ padding: "16px 20px 20px" }}>
+							<Skeleton w="100%" h={220} r={8} />
+						</div>
+					</div>
+				))}
+			</div>
 		</div>
 	);
 }
@@ -269,104 +361,10 @@ export function DashboardPage() {
 		queryFn: () => analyticsService.getDashboard(),
 	});
 
-	// ── Loading skeleton ──
-	const statSkeletonKeys = [
-		"stat-total",
-		"stat-average",
-		"stat-median",
-		"stat-departments",
-	];
-	const chartSkeletonKeys = [
-		"chart-country",
-		"chart-status",
-		"chart-department",
-		"chart-trend",
-	];
-
-	if (isLoading) {
-		return (
-			<div
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					gap: 24,
-					fontFamily: "'Segoe UI', system-ui, sans-serif",
-				}}
-			>
-				<style>
-					{
-						"@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}"
-					}
-				</style>
-				<div>
-					<Skeleton w={140} h={28} r={6} />
-					<div style={{ marginTop: 8 }}>
-						<Skeleton w={220} h={14} r={5} />
-					</div>
-				</div>
-				<div
-					style={{
-						display: "grid",
-						gridTemplateColumns: "repeat(4,1fr)",
-						gap: 16,
-					}}
-				>
-					{statSkeletonKeys.map((key) => (
-						<div
-							key={key}
-							style={{
-								background: "#fff",
-								borderRadius: 12,
-								border: "1px solid #e8edf3",
-								padding: "20px 22px",
-								display: "flex",
-								flexDirection: "column",
-								gap: 12,
-							}}
-						>
-							<div style={{ display: "flex", justifyContent: "space-between" }}>
-								<Skeleton w="55%" h={12} r={4} />
-								<Skeleton w={36} h={36} r={10} />
-							</div>
-							<Skeleton w="70%" h={28} r={6} />
-							<Skeleton w="45%" h={12} r={4} />
-						</div>
-					))}
-				</div>
-				<div
-					style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
-				>
-					{chartSkeletonKeys.map((key) => (
-						<div
-							key={key}
-							style={{
-								background: "#fff",
-								borderRadius: 12,
-								border: "1px solid #e8edf3",
-								overflow: "hidden",
-							}}
-						>
-							<div
-								style={{
-									padding: "18px 22px 14px",
-									borderBottom: "1px solid #f0f4f8",
-								}}
-							>
-								<Skeleton w="40%" h={16} r={5} />
-							</div>
-							<div style={{ padding: "18px 22px 22px" }}>
-								<Skeleton w="100%" h={240} r={8} />
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
-		);
-	}
-
+	if (isLoading) return <DashboardSkeleton />;
 	if (!dashboard) return null;
 
-	const stats = [
+	const stats: StatCardProps[] = [
 		{
 			title: "Total Employees",
 			value: formatNumber(dashboard.totalEmployees),
@@ -413,64 +411,49 @@ export function DashboardPage() {
 			}}
 		>
 			<style>{`
-        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-        @media(max-width:900px){
-          .dash-stats{grid-template-columns:1fr 1fr!important}
-          .dash-charts{grid-template-columns:1fr!important}
-        }
-        @media(max-width:520px){
-          .dash-stats{grid-template-columns:1fr!important}
-        }
-      `}</style>
+				@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+				.dash-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+				.dash-charts-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+				@media (max-width: 1024px) {
+					.dash-stats { grid-template-columns: repeat(2, 1fr) !important; }
+					.dash-charts-2 { grid-template-columns: 1fr !important; }
+				}
+				@media (max-width: 560px) {
+					.dash-stats { grid-template-columns: 1fr !important; }
+				}
+			`}</style>
 
-			{/* ── Page header ── */}
 			<div>
 				<h1
 					style={{
-						margin: "0 0 4px",
-						fontSize: "1.5rem",
+						margin: "0 0 2px",
+						fontSize: "1.4rem",
 						fontWeight: 700,
 						color: "#0f172a",
 					}}
 				>
 					Dashboard
 				</h1>
-				{/* <p style={{ margin: 0, fontSize: "0.82rem", color: "#94a3b8" }}>
-					<span style={{ color: "#64748b" }}>Home</span>
-					<span style={{ margin: "0 6px" }}>/</span>
-					<span style={{ color: "#1a7fd4", fontWeight: 500 }}>Dashboard</span>
-				</p> */}
 			</div>
 
-			{/* ── Stat cards ── */}
-			<div
-				className="dash-stats"
-				style={{
-					display: "grid",
-					gridTemplateColumns: "repeat(4,1fr)",
-					gap: 16,
-				}}
-			>
+			{/* Stat cards */}
+			<div className="dash-stats">
 				{stats.map((s) => (
 					<StatCard key={s.title} {...s} />
 				))}
 			</div>
 
-			{/* ── Charts row 1: Bar + Pie ── */}
-			<div
-				className="dash-charts"
-				style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
-			>
-				{/* Salary by Country — Bar */}
+			{/* Charts row 1 */}
+			<div className="dash-charts-2">
 				<SectionCard
 					title="Avg Salary by Country"
 					subtitle="Top countries by compensation"
 				>
-					<ResponsiveContainer width="100%" height={260}>
+					<ResponsiveContainer width="100%" height={240}>
 						<BarChart
 							data={dashboard.countrySalaryStats.slice(0, 8)}
-							barSize={26}
-							margin={{ top: 4, right: 4, left: -10, bottom: 0 }}
+							barSize={22}
+							margin={{ top: 4, right: 4, left: -14, bottom: 0 }}
 						>
 							<defs>
 								<linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
@@ -485,18 +468,18 @@ export function DashboardPage() {
 							/>
 							<XAxis
 								dataKey="country"
-								tick={{ fontSize: 11, fill: "#94a3b8" }}
+								tick={{ fontSize: 10, fill: "#94a3b8" }}
 								axisLine={false}
 								tickLine={false}
 							/>
 							<YAxis
-								tick={{ fontSize: 11, fill: "#94a3b8" }}
+								tick={{ fontSize: 10, fill: "#94a3b8" }}
 								axisLine={false}
 								tickLine={false}
-								width={56}
+								width={52}
 							/>
 							<Tooltip
-								contentStyle={tooltipStyle}
+								contentStyle={TOOLTIP_STYLE}
 								cursor={{ fill: "#f0f9ff", radius: 4 }}
 							/>
 							<Bar
@@ -508,16 +491,15 @@ export function DashboardPage() {
 					</ResponsiveContainer>
 				</SectionCard>
 
-				{/* Employee Distribution — Donut */}
 				<SectionCard title="Employee Distribution" subtitle="By department">
-					<ResponsiveContainer width="100%" height={200}>
+					<ResponsiveContainer width="100%" height={188}>
 						<PieChart>
 							<Pie
 								data={dashboard.departmentStats.slice(0, 6)}
 								cx="50%"
 								cy="50%"
-								innerRadius={58}
-								outerRadius={90}
+								innerRadius={52}
+								outerRadius={84}
 								paddingAngle={3}
 								dataKey="employeeCount"
 								strokeWidth={0}
@@ -530,18 +512,17 @@ export function DashboardPage() {
 								))}
 							</Pie>
 							<Tooltip
-								contentStyle={tooltipStyle}
+								contentStyle={TOOLTIP_STYLE}
 								formatter={(val: number) => [formatNumber(val), "Employees"]}
 							/>
 						</PieChart>
 					</ResponsiveContainer>
-					{/* Legend */}
 					<div
 						style={{
 							display: "flex",
 							flexWrap: "wrap",
-							gap: "6px 18px",
-							marginTop: 8,
+							gap: "5px 16px",
+							marginTop: 6,
 						}}
 					>
 						{dashboard.departmentStats.slice(0, 6).map((d, i) => (
@@ -555,20 +536,16 @@ export function DashboardPage() {
 				</SectionCard>
 			</div>
 
-			{/* ── Charts row 2: Line + Top Departments ── */}
-			<div
-				className="dash-charts"
-				style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
-			>
-				{/* Hiring Trends — Line */}
+			{/* Charts row 2 */}
+			<div className="dash-charts-2">
 				<SectionCard
 					title="Hiring Trends"
 					subtitle="Monthly hires over the last 12 months"
 				>
-					<ResponsiveContainer width="100%" height={260}>
+					<ResponsiveContainer width="100%" height={240}>
 						<LineChart
 							data={dashboard.hiringTrends.slice(-12)}
-							margin={{ top: 4, right: 4, left: -10, bottom: 0 }}
+							margin={{ top: 4, right: 4, left: -14, bottom: 0 }}
 						>
 							<defs>
 								<linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
@@ -583,17 +560,17 @@ export function DashboardPage() {
 							/>
 							<XAxis
 								dataKey="month"
-								tick={{ fontSize: 11, fill: "#94a3b8" }}
+								tick={{ fontSize: 10, fill: "#94a3b8" }}
 								axisLine={false}
 								tickLine={false}
 							/>
 							<YAxis
-								tick={{ fontSize: 11, fill: "#94a3b8" }}
+								tick={{ fontSize: 10, fill: "#94a3b8" }}
 								axisLine={false}
 								tickLine={false}
-								width={36}
+								width={34}
 							/>
-							<Tooltip contentStyle={tooltipStyle} />
+							<Tooltip contentStyle={TOOLTIP_STYLE} />
 							<Line
 								type="monotone"
 								dataKey="hireCount"
@@ -606,12 +583,11 @@ export function DashboardPage() {
 					</ResponsiveContainer>
 				</SectionCard>
 
-				{/* Top Paying Departments — custom list */}
 				<SectionCard
 					title="Top Paying Departments"
 					subtitle="Ranked by average salary"
 				>
-					<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+					<div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 						{dashboard.topPayingDepartments.map((dept, i) => {
 							const max = dashboard.topPayingDepartments[0]?.avgSalary ?? 1;
 							const pct = Math.round((dept.avgSalary / max) * 100);
@@ -622,23 +598,23 @@ export function DashboardPage() {
 											display: "flex",
 											alignItems: "center",
 											justifyContent: "space-between",
-											marginBottom: 8,
+											marginBottom: 7,
 										}}
 									>
-										{/* Rank + name */}
 										<div
 											style={{ display: "flex", alignItems: "center", gap: 10 }}
 										>
 											<div
+												aria-hidden="true"
 												style={{
-													width: 26,
-													height: 26,
-													borderRadius: 8,
+													width: 24,
+													height: 24,
+													borderRadius: 7,
 													background: i === 0 ? "#eff6ff" : "#f8fafc",
 													display: "flex",
 													alignItems: "center",
 													justifyContent: "center",
-													fontSize: "0.72rem",
+													fontSize: "0.7rem",
 													fontWeight: 700,
 													color: i === 0 ? "#1a7fd4" : "#94a3b8",
 													flexShrink: 0,
@@ -650,7 +626,7 @@ export function DashboardPage() {
 												<p
 													style={{
 														margin: 0,
-														fontSize: "0.875rem",
+														fontSize: "0.85rem",
 														fontWeight: 600,
 														color: "#0f172a",
 														lineHeight: 1.2,
@@ -661,7 +637,7 @@ export function DashboardPage() {
 												<p
 													style={{
 														margin: 0,
-														fontSize: "0.72rem",
+														fontSize: "0.7rem",
 														color: "#94a3b8",
 													}}
 												>
@@ -669,13 +645,11 @@ export function DashboardPage() {
 												</p>
 											</div>
 										</div>
-
-										{/* Salary */}
 										<div style={{ textAlign: "right" }}>
 											<p
 												style={{
 													margin: 0,
-													fontSize: "0.88rem",
+													fontSize: "0.85rem",
 													fontWeight: 700,
 													color: "#0f172a",
 												}}
@@ -685,7 +659,7 @@ export function DashboardPage() {
 											<p
 												style={{
 													margin: 0,
-													fontSize: "0.7rem",
+													fontSize: "0.68rem",
 													color: "#94a3b8",
 												}}
 											>
@@ -693,8 +667,6 @@ export function DashboardPage() {
 											</p>
 										</div>
 									</div>
-
-									{/* Progress bar */}
 									<div
 										style={{
 											height: 4,
@@ -714,6 +686,12 @@ export function DashboardPage() {
 												borderRadius: 99,
 												transition: "width 0.6s ease",
 											}}
+											tabIndex={0}
+											role="progressbar"
+											aria-valuenow={pct}
+											aria-valuemin={0}
+											aria-valuemax={100}
+											aria-label={`${dept.department} salary rank`}
 										/>
 									</div>
 								</div>
