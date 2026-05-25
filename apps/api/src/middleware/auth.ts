@@ -22,8 +22,22 @@ export function authenticate(
 
 		const token = authHeader.substring(7);
 
-		const decoded = jwt.verify(token, env.JWT_SECRET) as AuthUser;
-		req.user = decoded;
+		const payload = jwt.verify(token, env.JWT_SECRET);
+
+		if (typeof payload !== "object" || payload === null) {
+			throw new UnauthorizedError("Invalid token payload");
+		}
+
+		const decoded = payload as jwt.JwtPayload;
+
+		// Map userId from JWT to id for AuthUser
+		req.user = {
+			id: String(decoded.userId),
+			email: String(decoded.email),
+			firstName: String(decoded.firstName),
+			lastName: String(decoded.lastName),
+			role: String(decoded.role),
+		};
 
 		next();
 	} catch (error) {
