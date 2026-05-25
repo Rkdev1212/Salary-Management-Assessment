@@ -17,6 +17,11 @@ interface EmployeeFiltersProps {
 	onFiltersChange: (filters: Filters) => void;
 }
 
+const EMPLOYEE_STATUS_OPTIONS = [
+	EmployeeStatus.ACTIVE,
+	EmployeeStatus.INACTIVE,
+] as const;
+
 export function EmployeeFilters({
 	filters,
 	onFiltersChange,
@@ -27,16 +32,20 @@ export function EmployeeFilters({
 	});
 
 	const handleFilterChange = (
-		key: keyof Filters,
+		key: "country" | "department" | "employmentType" | "status",
 		value: string | undefined,
 	) => {
 		const newFilters = { ...filters };
 
-		// Remove the filter if value is empty string or undefined
-		if (!value || value === "") {
-			delete newFilters[key];
+		// Remove the filter if value is empty string, "all" or undefined
+		if (!value || value === "" || value === "all") {
+			newFilters[key] = undefined;
+		} else if (key === "employmentType") {
+			newFilters.employmentType = value as EmploymentType;
+		} else if (key === "status") {
+			newFilters.status = value as EmployeeStatus;
 		} else {
-			newFilters[key] = value as any;
+			newFilters[key] = value;
 		}
 
 		onFiltersChange(newFilters);
@@ -52,14 +61,14 @@ export function EmployeeFilters({
 				<div className="space-y-2">
 					<Label>Country</Label>
 					<Select
-						value={filters.country || ""}
+						value={filters.country || "all"}
 						onValueChange={(value) => handleFilterChange("country", value)}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder="All countries" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">All countries</SelectItem>
+							<SelectItem value="all">All countries</SelectItem>
 							{filterOptions?.countries.map((country) => (
 								<SelectItem key={country} value={country}>
 									{country}
@@ -72,14 +81,14 @@ export function EmployeeFilters({
 				<div className="space-y-2">
 					<Label>Department</Label>
 					<Select
-						value={filters.department || ""}
+						value={filters.department || "all"}
 						onValueChange={(value) => handleFilterChange("department", value)}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder="All departments" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">All departments</SelectItem>
+							<SelectItem value="all">All departments</SelectItem>
 							{filterOptions?.departments.map((dept) => (
 								<SelectItem key={dept} value={dept}>
 									{dept}
@@ -92,7 +101,7 @@ export function EmployeeFilters({
 				<div className="space-y-2">
 					<Label>Employment Type</Label>
 					<Select
-						value={filters.employmentType || ""}
+						value={filters.employmentType || "all"}
 						onValueChange={(value) =>
 							handleFilterChange("employmentType", value)
 						}
@@ -101,7 +110,7 @@ export function EmployeeFilters({
 							<SelectValue placeholder="All types" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">All types</SelectItem>
+							<SelectItem value="all">All types</SelectItem>
 							{Object.values(EmploymentType).map((type) => (
 								<SelectItem key={type} value={type}>
 									{type.replace("_", " ")}
@@ -114,15 +123,15 @@ export function EmployeeFilters({
 				<div className="space-y-2">
 					<Label>Status</Label>
 					<Select
-						value={filters.status || ""}
+						value={filters.status || "all"}
 						onValueChange={(value) => handleFilterChange("status", value)}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder="All statuses" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="">All statuses</SelectItem>
-							{Object.values(EmployeeStatus).map((status) => (
+							<SelectItem value="all">All statuses</SelectItem>
+							{EMPLOYEE_STATUS_OPTIONS.map((status) => (
 								<SelectItem key={status} value={status}>
 									{status.replace("_", " ")}
 								</SelectItem>

@@ -23,7 +23,7 @@ describe("LoginPage", () => {
 	it("renders login form", () => {
 		render(<LoginPage />, { wrapper });
 
-		expect(screen.getByText(/welcome back/i)).toBeInTheDocument();
+		expect(screen.getByText(/welcome/i)).toBeInTheDocument();
 		expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
 		expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
 		expect(

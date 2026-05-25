@@ -1,6 +1,7 @@
-import type { Employee, EmployeeStatus, PaginatedResponse } from "@repo/types";
+import type { Employee, PaginatedResponse } from "@repo/types";
+import { EmployeeStatus } from "@repo/types";
 import { formatCurrency, formatDate } from "@repo/utils";
-import { Edit, Power, RotateCcw, X } from "lucide-react";
+import { Edit, Power, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 interface EmployeeTableProps {
@@ -107,8 +108,8 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 // ── StatusBadge ──────────────────────────────────────────────────────────────
-function StatusBadge({ status }: { status: string }) {
-	const active = status === "ACTIVE";
+function StatusBadge({ status }: { status: EmployeeStatus }) {
+	const active = status === EmployeeStatus.ACTIVE;
 	return (
 		<span
 			style={{
@@ -123,7 +124,7 @@ function StatusBadge({ status }: { status: string }) {
 				whiteSpace: "nowrap",
 			}}
 		>
-			{active ? "Active" : "Disabled"}
+			{active ? "Active" : "Inactive"}
 		</span>
 	);
 }
@@ -132,14 +133,46 @@ function StatusBadge({ status }: { status: string }) {
 function ActionIcon({
 	children,
 	onClick,
-	danger,
+	variant = "default",
 	title,
 }: {
 	children: React.ReactNode;
 	onClick: () => void;
-	danger?: boolean;
+	variant?: "default" | "edit" | "delete" | "activate" | "deactivate";
 	title?: string;
 }) {
+	const variantStyles = {
+		default: {
+			color: "#64748b",
+			hoverColor: "#475569",
+			hoverBg: "#f8fafc",
+		},
+
+		edit: {
+			color: "#64748b",
+			hoverColor: "#475569",
+			hoverBg: "#f8fafc",
+		},
+
+		delete: {
+			color: "#ef4444",
+			hoverColor: "#dc2626",
+			hoverBg: "#fef2f2",
+		},
+
+		deactivate: {
+			color: "#64748b",
+			hoverColor: "#475569",
+			hoverBg: "#f8fafc",
+		},
+
+		activate: {
+			color: "#ef4444",
+			hoverColor: "#dc2626",
+			hoverBg: "#fef2f2",
+		},
+	}[variant];
+
 	return (
 		<button
 			type="button"
@@ -155,22 +188,17 @@ function ActionIcon({
 				display: "flex",
 				alignItems: "center",
 				justifyContent: "center",
-				color: danger ? "#ef4444" : "#94a3b8",
+				color: variantStyles.color,
 				transition: "color 0.15s, background 0.15s",
 				flexShrink: 0,
 			}}
 			onMouseEnter={(e) => {
-				(e.currentTarget as HTMLElement).style.color = danger
-					? "#dc2626"
-					: "#1a7fd4";
-				(e.currentTarget as HTMLElement).style.background = danger
-					? "#fef2f2"
-					: "#eff6ff";
+				(e.currentTarget as HTMLElement).style.color = variantStyles.hoverColor;
+				(e.currentTarget as HTMLElement).style.background =
+					variantStyles.hoverBg;
 			}}
 			onMouseLeave={(e) => {
-				(e.currentTarget as HTMLElement).style.color = danger
-					? "#ef4444"
-					: "#94a3b8";
+				(e.currentTarget as HTMLElement).style.color = variantStyles.color;
 				(e.currentTarget as HTMLElement).style.background = "none";
 			}}
 		>
@@ -561,9 +589,32 @@ export function EmployeeTable({
 												gap: 0,
 											}}
 										>
-											<ActionIcon onClick={() => onEdit(employee)} title="Edit">
+											<ActionIcon
+												onClick={() => onEdit(employee)}
+												title="Edit"
+												variant="edit"
+											>
 												<Edit size={15} />
 											</ActionIcon>
+
+											<ActionIcon
+												onClick={() =>
+													onToggleStatus(employee.id, employee.status)
+												}
+												title={
+													employee.status === EmployeeStatus.ACTIVE
+														? "Deactivate"
+														: "Activate"
+												}
+												variant={
+													employee.status === EmployeeStatus.ACTIVE
+														? "deactivate"
+														: "activate"
+												}
+											>
+												<Power size={15} />
+											</ActionIcon>
+
 											<ActionIcon
 												onClick={() =>
 													setDeleteConfirm({
@@ -572,22 +623,10 @@ export function EmployeeTable({
 														employeeName: employee.fullName,
 													})
 												}
-												title="Reset / Delete"
+												title="Delete"
+												variant="delete"
 											>
-												<RotateCcw size={15} />
-											</ActionIcon>
-											<ActionIcon
-												onClick={() =>
-													onToggleStatus(employee.id, employee.status)
-												}
-												title={
-													employee.status === "ACTIVE"
-														? "Deactivate"
-														: "Activate"
-												}
-												danger={employee.status !== "ACTIVE"}
-											>
-												<Power size={15} />
+												<Trash2 size={15} />
 											</ActionIcon>
 										</div>
 									</td>

@@ -9,6 +9,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
 
+const STATUS_FILTERS = [
+	{ label: "All statuses", value: "" },
+	{ label: "Active", value: EmployeeStatus.ACTIVE },
+	{ label: "Inactive", value: EmployeeStatus.INACTIVE },
+] as const;
+
 export function EmployeesPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
@@ -93,6 +99,21 @@ export function EmployeesPage() {
 		setPage(1);
 	};
 
+	const handleStatusFilterChange = (status: EmployeeStatus | undefined) => {
+		setFilters((currentFilters) => {
+			const nextFilters = { ...currentFilters };
+
+			if (status) {
+				nextFilters.status = status;
+			} else {
+				nextFilters.status = undefined;
+			}
+
+			return nextFilters;
+		});
+		setPage(1);
+	};
+
 	return (
 		<div
 			style={{
@@ -141,7 +162,11 @@ export function EmployeesPage() {
 							margin: "0 0 4px",
 						}}
 					>
-						All Employees
+						{filters.status === EmployeeStatus.ACTIVE
+							? "Active Employees"
+							: filters.status === EmployeeStatus.INACTIVE
+								? "Inactive Employees"
+								: "All Employees"}
 					</h2>
 					<p style={{ fontSize: "0.85rem", color: "#94a3b8", margin: 0 }}>
 						Manage your organization's employee records and access.
@@ -231,7 +256,7 @@ export function EmployeesPage() {
 				</div>
 
 				{/* Filter toggle */}
-				<button
+				{/* <button
 					type="button"
 					onClick={() => setShowFilters(!showFilters)}
 					style={{
@@ -254,7 +279,45 @@ export function EmployeesPage() {
 				>
 					<SlidersHorizontal size={15} />
 					Filters
-				</button>
+				</button> */}
+
+				<select
+					aria-label="Employee status"
+					value={filters.status ?? ""}
+					onChange={(event) =>
+						handleStatusFilterChange(
+							event.target.value
+								? (event.target.value as EmployeeStatus)
+								: undefined,
+						)
+					}
+					style={{
+						height: 40,
+						minWidth: 140,
+						padding: "0 34px 0 12px",
+						borderRadius: 8,
+						border: "1.5px solid #e8edf3",
+						background: "#fff",
+						color: filters.status ? "#1a7fd4" : "#64748b",
+						fontSize: "0.875rem",
+						fontWeight: filters.status ? 700 : 500,
+						cursor: "pointer",
+						fontFamily: "inherit",
+						outline: "none",
+					}}
+					onFocus={(e) => {
+						e.currentTarget.style.borderColor = "#93c5fd";
+					}}
+					onBlur={(e) => {
+						e.currentTarget.style.borderColor = "#e8edf3";
+					}}
+				>
+					{STATUS_FILTERS.map((statusFilter) => (
+						<option key={statusFilter.label} value={statusFilter.value}>
+							{statusFilter.label}
+						</option>
+					))}
+				</select>
 			</div>
 
 			{/* Filters panel */}

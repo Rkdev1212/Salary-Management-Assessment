@@ -6,9 +6,7 @@ test.describe("Login Page", () => {
 	});
 
 	test("should display login form", async ({ page }) => {
-		await expect(
-			page.getByRole("heading", { name: /welcome back/i }),
-		).toBeVisible();
+		await expect(page.getByRole("heading", { name: /welcome/i })).toBeVisible();
 		await expect(page.getByLabel(/email/i)).toBeVisible();
 		await expect(page.getByLabel(/password/i)).toBeVisible();
 		await expect(page.getByRole("button", { name: /sign in/i })).toBeVisible();
@@ -27,7 +25,7 @@ test.describe("Login Page", () => {
 		await page.getByRole("button", { name: /sign in/i }).click();
 
 		// Wait for error message
-		await expect(page.getByText(/invalid email or password/i)).toBeVisible();
+		await expect(page.getByText(/invalid credentials/i)).toBeVisible();
 	});
 
 	test("should navigate to dashboard on successful login", async ({ page }) => {
@@ -46,14 +44,10 @@ test.describe("Login Page", () => {
 	test("should be responsive", async ({ page }) => {
 		// Test mobile viewport
 		await page.setViewportSize({ width: 375, height: 667 });
-		await expect(
-			page.getByRole("heading", { name: /welcome back/i }),
-		).toBeVisible();
+		await expect(page.getByRole("heading", { name: /welcome/i })).toBeVisible();
 
 		// Test tablet viewport
 		await page.setViewportSize({ width: 768, height: 1024 });
-		await expect(
-			page.getByRole("heading", { name: /welcome back/i }),
-		).toBeVisible();
+		await expect(page.getByRole("heading", { name: /welcome/i })).toBeVisible();
 	});
 });

@@ -19,10 +19,8 @@ describe("EmployeeService", () => {
 	describe("getAll", () => {
 		it("fetches employees with pagination", async () => {
 			const mockResponse = {
-				data: {
-					data: [],
-					meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
-				},
+				data: [],
+				meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
 			};
 
 			vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
@@ -30,19 +28,22 @@ describe("EmployeeService", () => {
 			const result = await employeeService.getAll({ page: 1, limit: 20 }, {});
 
 			expect(apiClient.get).toHaveBeenCalledWith("/employees", {
-				params: { page: 1, limit: 20 },
+				page: 1,
+				limit: 20,
 			});
-			expect(result).toEqual(mockResponse.data);
+			expect(result).toEqual(mockResponse);
 		});
 
 		it("includes filters in request", async () => {
-			const mockResponse = { data: { data: [], meta: {} } };
+			const mockResponse = { data: [], meta: {} };
 			vi.mocked(apiClient.get).mockResolvedValue(mockResponse);
 
 			await employeeService.getAll({ page: 1, limit: 20 }, { country: "US" });
 
 			expect(apiClient.get).toHaveBeenCalledWith("/employees", {
-				params: { page: 1, limit: 20, country: "US" },
+				page: 1,
+				limit: 20,
+				country: "US",
 			});
 		});
 	});
@@ -50,7 +51,7 @@ describe("EmployeeService", () => {
 	describe("getById", () => {
 		it("fetches employee by id", async () => {
 			const mockEmployee = { id: "1", firstName: "John", lastName: "Doe" };
-			vi.mocked(apiClient.get).mockResolvedValue({ data: mockEmployee });
+			vi.mocked(apiClient.get).mockResolvedValue(mockEmployee);
 
 			const result = await employeeService.getById("1");
 
@@ -79,34 +80,34 @@ describe("EmployeeService", () => {
 				location: "New York",
 				timezone: "America/New_York",
 			};
-			const mockResponse = { data: { id: "1", ...newEmployee } };
+			const mockResponse = { id: "1", ...newEmployee };
 
 			vi.mocked(apiClient.post).mockResolvedValue(mockResponse);
 
 			const result = await employeeService.create(newEmployee);
 
 			expect(apiClient.post).toHaveBeenCalledWith("/employees", newEmployee);
-			expect(result).toEqual(mockResponse.data);
+			expect(result).toEqual(mockResponse);
 		});
 	});
 
 	describe("update", () => {
 		it("updates an employee", async () => {
 			const updates = { firstName: "Jane" };
-			const mockResponse = { data: { id: "1", ...updates } };
+			const mockResponse = { id: "1", ...updates };
 
 			vi.mocked(apiClient.put).mockResolvedValue(mockResponse);
 
 			const result = await employeeService.update("1", updates);
 
 			expect(apiClient.put).toHaveBeenCalledWith("/employees/1", updates);
-			expect(result).toEqual(mockResponse.data);
+			expect(result).toEqual(mockResponse);
 		});
 	});
 
 	describe("delete", () => {
 		it("deletes an employee", async () => {
-			vi.mocked(apiClient.delete).mockResolvedValue({ data: undefined });
+			vi.mocked(apiClient.delete).mockResolvedValue(undefined);
 
 			await employeeService.delete("1");
 

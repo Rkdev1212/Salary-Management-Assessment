@@ -467,10 +467,10 @@ export function DashboardLayout() {
 							onClick={() => setCollapsed(false)}
 							style={{
 								position: "fixed",
-								left: sidebarWidth + 10,
+								left: sidebarWidth - 10,
 								top: 32,
-								width: 28,
-								height: 28,
+								width: 25,
+								height: 25,
 								borderRadius: "50%",
 								background: "#fff",
 								border: "1px solid #e2e8f0",

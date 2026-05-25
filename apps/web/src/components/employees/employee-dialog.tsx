@@ -1,17 +1,47 @@
-import React, { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { employeeService } from "@/services/employee.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EmployeeStatus, EmploymentType, SalaryBand } from "@repo/types";
 import type {
-	Employee,
 	CreateEmployeeDto,
+	Employee,
 	UpdateEmployeeDto,
 } from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mail, X } from "lucide-react";
+import { UserPlus, X } from "lucide-react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const EMPLOYEE_STATUS_OPTIONS = [
+	EmployeeStatus.ACTIVE,
+	EmployeeStatus.INACTIVE,
+] as const;
+
+const DEFAULT_FORM_VALUES = {
+	firstName: "",
+	lastName: "",
+	email: "",
+	phone: "",
+	country: "",
+	currency: "USD",
+	salary: undefined as unknown as number,
+	department: "",
+	jobTitle: "",
+	employmentType: EmploymentType.FULL_TIME,
+	joiningDate: new Date().toISOString().split("T")[0],
+	status: EmployeeStatus.ACTIVE,
+	salaryBand: SalaryBand.MID,
+	bonusEligible: false,
+	location: "",
+	timezone: "America/New_York",
+	managerName: undefined as string | undefined,
+	performanceRating: undefined as number | null | undefined,
+};
+
+// ─── Schema ───────────────────────────────────────────────────────────────────
 
 const employeeSchema = z.object({
 	firstName: z.string().min(1, "First name is required"),
@@ -19,63 +49,135 @@ const employeeSchema = z.object({
 	email: z.string().email("Invalid email"),
 	phone: z.string().min(10, "Phone must be at least 10 characters"),
 	country: z.string().min(1, "Country is required"),
-	currency: z.string().length(3, "Currency must be 3 characters"),
-
+	currency: z.string().length(3, "Must be 3 characters (e.g. USD)"),
 	salary: z.coerce
 		.number({
 			required_error: "Salary is required",
-			invalid_type_error: "Salary must be a number",
+			invalid_type_error: "Must be a number",
 		})
-		.positive("Salary must be positive"),
-
+		.positive("Must be positive"),
 	department: z.string().min(1, "Department is required"),
 	jobTitle: z.string().min(1, "Job title is required"),
-
 	employmentType: z.nativeEnum(EmploymentType),
-
 	joiningDate: z.string().min(1, "Joining date is required"),
-
 	status: z.nativeEnum(EmployeeStatus),
-
 	salaryBand: z.nativeEnum(SalaryBand),
-
 	bonusEligible: z.boolean(),
-
 	location: z.string().min(1, "Location is required"),
-
 	timezone: z.string().min(1, "Timezone is required"),
-
 	managerName: z.string().optional(),
-
 	performanceRating: z.coerce.number().min(1).max(5).optional().nullable(),
 });
 
-type EmployeeForm = z.infer<typeof employeeSchema>;
+type EmployeeFormData = z.infer<typeof employeeSchema>;
 
-interface EmployeeDialogProps {
-	open: boolean;
-	onClose: () => void;
-	employee: Employee | null;
-}
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+const styles = {
+	input: {
+		width: "100%",
+		height: 42,
+		padding: "0 12px",
+		borderRadius: 8,
+		border: "1.5px solid #e2e8f0",
+		fontSize: "0.875rem",
+		color: "#1e293b",
+		background: "#fff",
+		outline: "none",
+		boxSizing: "border-box" as const,
+		fontFamily: "inherit",
+		transition: "border-color 0.15s, box-shadow 0.15s",
+	},
+} as const;
+
+const StyledInput = React.forwardRef<
+	HTMLInputElement,
+	React.InputHTMLAttributes<HTMLInputElement>
+>(({ onBlur, onFocus, style, ...rest }, ref) => (
+	<input
+		ref={ref}
+		{...rest}
+		style={{ ...styles.input, ...style }}
+		onFocus={(e) => {
+			e.currentTarget.style.borderColor = "#3b82f6";
+			e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1)";
+			onFocus?.(e);
+		}}
+		onBlur={(e) => {
+			e.currentTarget.style.borderColor = "#e2e8f0";
+			e.currentTarget.style.boxShadow = "none";
+			onBlur?.(e);
+		}}
+	/>
+));
+StyledInput.displayName = "StyledInput";
+
+const StyledSelect = React.forwardRef<
+	HTMLSelectElement,
+	React.SelectHTMLAttributes<HTMLSelectElement>
+>(({ onBlur, onFocus, style, ...rest }, ref) => (
+	<select
+		ref={ref}
+		{...rest}
+		style={{
+			...styles.input,
+			appearance: "none",
+			backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+			backgroundRepeat: "no-repeat",
+			backgroundPosition: "right 10px center",
+			paddingRight: 34,
+			cursor: "pointer",
+			...style,
+		}}
+		onFocus={(e) => {
+			e.currentTarget.style.borderColor = "#3b82f6";
+			e.currentTarget.style.boxShadow = "0 0 0 3px rgba(59,130,246,0.1)";
+			onFocus?.(e);
+		}}
+		onBlur={(e) => {
+			e.currentTarget.style.borderColor = "#e2e8f0";
+			e.currentTarget.style.boxShadow = "none";
+			onBlur?.(e);
+		}}
+	/>
+));
+StyledSelect.displayName = "StyledSelect";
 
 function Field({
 	label,
 	required,
 	error,
 	children,
+	fullWidth,
 }: {
 	label: string;
 	required?: boolean;
 	error?: string;
 	children: React.ReactNode;
+	fullWidth?: boolean;
 }) {
+	const generatedId = React.useId();
+	const controlId = generatedId;
+	const control = React.isValidElement<{ id?: string }>(children)
+		? React.cloneElement(children, { id: children.props.id ?? controlId })
+		: children;
+
 	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-			<div
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				gap: 5,
+				gridColumn: fullWidth ? "1 / -1" : undefined,
+			}}
+		>
+			<label
+				htmlFor={controlId}
 				style={{
-					fontSize: "0.88rem",
-					fontWeight: 500,
-					color: "#374151",
+					fontSize: "0.8rem",
+					fontWeight: 600,
+					color: "#475569",
+					letterSpacing: "0.02em",
 					display: "flex",
 					alignItems: "center",
 					gap: 3,
@@ -83,19 +185,19 @@ function Field({
 			>
 				{label}
 				{required && (
-					<span style={{ color: "#ef4444", fontSize: "0.8rem" }}>*</span>
+					<span
+						style={{ color: "#ef4444", fontSize: "0.75rem" }}
+						aria-hidden="true"
+					>
+						*
+					</span>
 				)}
-			</div>
-
-			{children}
-
+			</label>
+			{control}
 			{error && (
 				<p
-					style={{
-						fontSize: "0.75rem",
-						color: "#ef4444",
-						margin: 0,
-					}}
+					role="alert"
+					style={{ fontSize: "0.72rem", color: "#ef4444", margin: 0 }}
 				>
 					{error}
 				</p>
@@ -104,75 +206,44 @@ function Field({
 	);
 }
 
-const inputStyle: React.CSSProperties = {
-	width: "100%",
-	height: 44,
-	padding: "0 14px",
-	borderRadius: 10,
-	border: "1.5px solid #e5e7eb",
-	fontSize: "0.9rem",
-	color: "#1e293b",
-	background: "#fff",
-	outline: "none",
-	boxSizing: "border-box",
-	transition: "border-color 0.15s",
-	fontFamily: "inherit",
-};
+// ─── Section divider ──────────────────────────────────────────────────────────
 
-const StyledInput = React.forwardRef<
-	HTMLInputElement,
-	React.InputHTMLAttributes<HTMLInputElement>
->(({ onBlur, onFocus, style, ...rest }, ref) => {
+function SectionLabel({ children }: { children: React.ReactNode }) {
 	return (
-		<input
-			ref={ref}
-			{...rest}
-			style={{ ...inputStyle, ...style }}
-			onFocus={(e) => {
-				e.currentTarget.style.borderColor = "#93c5fd";
-				onFocus?.(e);
-			}}
-			onBlur={(e) => {
-				e.currentTarget.style.borderColor = "#e5e7eb";
-				onBlur?.(e);
-			}}
-		/>
-	);
-});
-
-StyledInput.displayName = "StyledInput";
-
-const StyledSelect = React.forwardRef<
-	HTMLSelectElement,
-	React.SelectHTMLAttributes<HTMLSelectElement>
->(({ onBlur, onFocus, style, ...rest }, ref) => {
-	return (
-		<select
-			ref={ref}
-			{...rest}
+		<div
 			style={{
-				...inputStyle,
-				appearance: "none",
-				backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-				backgroundRepeat: "no-repeat",
-				backgroundPosition: "right 12px center",
-				paddingRight: 36,
-				cursor: "pointer",
-				...style,
+				gridColumn: "1 / -1",
+				display: "flex",
+				alignItems: "center",
+				gap: 10,
+				margin: "4px 0 2px",
 			}}
-			onFocus={(e) => {
-				e.currentTarget.style.borderColor = "#93c5fd";
-				onFocus?.(e);
-			}}
-			onBlur={(e) => {
-				e.currentTarget.style.borderColor = "#e5e7eb";
-				onBlur?.(e);
-			}}
-		/>
+		>
+			<span
+				style={{
+					fontSize: "0.72rem",
+					fontWeight: 700,
+					color: "#94a3b8",
+					letterSpacing: "0.08em",
+					textTransform: "uppercase",
+				}}
+			>
+				{children}
+			</span>
+			<div style={{ flex: 1, height: 1, background: "#f1f5f9" }} />
+		</div>
 	);
-});
+}
 
-StyledSelect.displayName = "StyledSelect";
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+interface EmployeeDialogProps {
+	open: boolean;
+	onClose: () => void;
+	employee: Employee | null;
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export function EmployeeDialog({
 	open,
@@ -187,31 +258,11 @@ export function EmployeeDialog({
 		handleSubmit,
 		reset,
 		formState: { errors },
-	} = useForm<EmployeeForm>({
+	} = useForm<EmployeeFormData>({
 		resolver: zodResolver(employeeSchema),
 		mode: "onSubmit",
 		reValidateMode: "onChange",
-
-		defaultValues: {
-			firstName: "",
-			lastName: "",
-			email: "",
-			phone: "",
-			country: "",
-			currency: "USD",
-			salary: undefined,
-			department: "",
-			jobTitle: "",
-			employmentType: EmploymentType.FULL_TIME,
-			joiningDate: new Date().toISOString().split("T")[0],
-			status: EmployeeStatus.ACTIVE,
-			salaryBand: SalaryBand.MID,
-			bonusEligible: false,
-			location: "",
-			timezone: "America/New_York",
-			managerName: undefined,
-			performanceRating: undefined,
-		},
+		defaultValues: DEFAULT_FORM_VALUES,
 	});
 
 	useEffect(() => {
@@ -221,51 +272,21 @@ export function EmployeeDialog({
 			reset({
 				...employee,
 				joiningDate: new Date(employee.joiningDate).toISOString().split("T")[0],
-
 				performanceRating: employee.performanceRating ?? undefined,
-
 				managerName: employee.managerName ?? undefined,
 			});
 		} else {
-			reset({
-				firstName: "",
-				lastName: "",
-				email: "",
-				phone: "",
-				country: "",
-				currency: "USD",
-				salary: undefined,
-				department: "",
-				jobTitle: "",
-				employmentType: EmploymentType.FULL_TIME,
-				joiningDate: new Date().toISOString().split("T")[0],
-				status: EmployeeStatus.ACTIVE,
-				salaryBand: SalaryBand.MID,
-				bonusEligible: false,
-				location: "",
-				timezone: "America/New_York",
-				managerName: undefined,
-				performanceRating: undefined,
-			});
+			reset(DEFAULT_FORM_VALUES);
 		}
 	}, [open, employee, reset]);
 
 	const createMutation = useMutation({
 		mutationFn: employeeService.create,
-
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["employees"],
-			});
-
-			toast({
-				title: "Success",
-				description: "Employee created successfully",
-			});
-
+			queryClient.invalidateQueries({ queryKey: ["employees"] });
+			toast({ title: "Success", description: "Employee created successfully" });
 			onClose();
 		},
-
 		onError: () =>
 			toast({
 				variant: "destructive",
@@ -275,27 +296,13 @@ export function EmployeeDialog({
 	});
 
 	const updateMutation = useMutation({
-		mutationFn: ({
-			id,
-			data,
-		}: {
-			id: string;
-			data: UpdateEmployeeDto;
-		}) => employeeService.update(id, data),
-
+		mutationFn: ({ id, data }: { id: string; data: UpdateEmployeeDto }) =>
+			employeeService.update(id, data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["employees"],
-			});
-
-			toast({
-				title: "Success",
-				description: "Employee updated successfully",
-			});
-
+			queryClient.invalidateQueries({ queryKey: ["employees"] });
+			toast({ title: "Success", description: "Employee updated successfully" });
 			onClose();
 		},
-
 		onError: () =>
 			toast({
 				variant: "destructive",
@@ -305,16 +312,17 @@ export function EmployeeDialog({
 	});
 
 	const isPending = createMutation.isPending || updateMutation.isPending;
+	const isEditing = Boolean(employee);
 
-	const onSubmit = (data: EmployeeForm) => {
+	const onSubmit = (data: EmployeeFormData) => {
 		const payload = {
 			...data,
 			joiningDate: new Date(data.joiningDate),
-			performanceRating: data.performanceRating || null,
+			performanceRating: data.performanceRating ?? null,
 			managerName: data.managerName || null,
 		};
 
-		if (employee) {
+		if (isEditing && employee) {
 			updateMutation.mutate({
 				id: employee.id,
 				data: payload as UpdateEmployeeDto,
@@ -328,119 +336,242 @@ export function EmployeeDialog({
 
 	return (
 		<>
+			{/* Backdrop */}
 			<button
 				type="button"
+				aria-label="Close dialog"
 				onClick={onClose}
 				style={{
 					position: "fixed",
 					inset: 0,
-					background: "rgba(15,23,42,0.45)",
-					backdropFilter: "blur(3px)",
+					background: "rgba(15,23,42,0.5)",
+					backdropFilter: "blur(4px)",
 					zIndex: 100,
 					border: "none",
 					padding: 0,
 					cursor: "default",
 				}}
-				aria-label="Close dialog"
 			/>
 
-			<div
+			{/* Dialog */}
+			<dialog
+				open
+				aria-labelledby="dialog-title"
 				style={{
 					position: "fixed",
 					top: "50%",
 					left: "50%",
-					transform: "translate(-50%,-50%)",
+					transform: "translate(-50%, -50%)",
 					zIndex: 101,
-					width: "min(680px,95vw)",
-					maxHeight: "90vh",
+					width: "min(720px, 96vw)",
+					maxHeight: "92vh",
 					background: "#fff",
-					borderRadius: 20,
-					boxShadow: "0 24px 64px rgba(0,0,0,0.18)",
+					borderRadius: 16,
+					boxShadow: "0 32px 80px rgba(0,0,0,0.2)",
 					display: "flex",
 					flexDirection: "column",
 					overflow: "hidden",
+					border: "none",
+					padding: 0,
 				}}
 			>
+				{/* Colored header — matches reference design */}
 				<div
 					style={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "space-between",
-						padding: "22px 28px 18px",
-						borderBottom: "1px solid #f1f5f9",
+						background: "linear-gradient(135deg, #1a7fd4 0%, #0f5fa8 100%)",
+						padding: "20px 28px",
+						position: "relative",
+						overflow: "hidden",
+						flexShrink: 0,
 					}}
 				>
-					<h2
+					{/* Decorative circles for depth */}
+					<div
+						aria-hidden="true"
 						style={{
-							margin: 0,
-							fontSize: "1.15rem",
-							fontWeight: 700,
+							position: "absolute",
+							top: -30,
+							right: -30,
+							width: 120,
+							height: 120,
+							borderRadius: "50%",
+							background: "rgba(255,255,255,0.08)",
 						}}
-					>
-						{employee ? "Edit Employee" : "Add Employee"}
-					</h2>
-
-					<button
-						type="button"
-						onClick={onClose}
+					/>
+					<div
+						aria-hidden="true"
 						style={{
-							background: "#f8fafc",
-							border: "none",
-							borderRadius: 8,
-							width: 32,
-							height: 32,
+							position: "absolute",
+							bottom: -20,
+							right: 60,
+							width: 70,
+							height: 70,
+							borderRadius: "50%",
+							background: "rgba(255,255,255,0.06)",
+						}}
+					/>
+
+					<div
+						style={{
 							display: "flex",
 							alignItems: "center",
-							justifyContent: "center",
-							cursor: "pointer",
+							justifyContent: "space-between",
+							gap: 16,
+							position: "relative",
 						}}
 					>
-						<X size={16} />
-					</button>
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: 12,
+								minWidth: 0,
+							}}
+						>
+							<div
+								style={{
+									width: 40,
+									height: 40,
+									borderRadius: 10,
+									background: "rgba(255,255,255,0.18)",
+									display: "flex",
+									alignItems: "center",
+									justifyContent: "center",
+								}}
+							>
+								<UserPlus size={20} color="#fff" />
+							</div>
+							<div style={{ minWidth: 0 }}>
+								<h2
+									id="dialog-title"
+									style={{
+										margin: 0,
+										fontSize: "1.1rem",
+										fontWeight: 700,
+										color: "#fff",
+									}}
+								>
+									{isEditing ? "Edit Employee" : "Add New Employee"}
+								</h2>
+								<p
+									style={{
+										margin: 0,
+										fontSize: "0.8rem",
+										color: "rgba(255,255,255,0.72)",
+										marginTop: 2,
+									}}
+								>
+									{isEditing
+										? "Update employee details below"
+										: "Fill in the details to add a new employee"}
+								</p>
+							</div>
+						</div>
+
+						<button
+							type="button"
+							aria-label="Close dialog"
+							onClick={onClose}
+							style={{
+								background: "rgba(255,255,255,0.15)",
+								border: "none",
+								borderRadius: 8,
+								width: 32,
+								height: 32,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								cursor: "pointer",
+								color: "#fff",
+								flexShrink: 0,
+							}}
+						>
+							<X size={16} />
+						</button>
+					</div>
 				</div>
 
+				{/* Scrollable form body */}
 				<div
 					style={{
 						overflowY: "auto",
 						padding: "24px 28px",
 						flex: 1,
+						minHeight: 0,
 					}}
 				>
 					<form
 						id="employee-form"
 						onSubmit={handleSubmit(onSubmit)}
+						noValidate
 						style={{
-							display: "flex",
-							flexDirection: "column",
-							gap: 18,
+							display: "grid",
+							gridTemplateColumns: "1fr 1fr",
+							gap: "16px 20px",
 						}}
 					>
+						<SectionLabel>Personal Information</SectionLabel>
+
 						<Field
 							label="First Name"
 							required
 							error={errors.firstName?.message}
 						>
-							<StyledInput placeholder="John" {...register("firstName")} />
+							<StyledInput
+								placeholder="John"
+								autoComplete="given-name"
+								aria-required="true"
+								{...register("firstName")}
+							/>
 						</Field>
 
 						<Field label="Last Name" required error={errors.lastName?.message}>
-							<StyledInput placeholder="Smith" {...register("lastName")} />
+							<StyledInput
+								placeholder="Smith"
+								autoComplete="family-name"
+								aria-required="true"
+								{...register("lastName")}
+							/>
 						</Field>
 
 						<Field label="Email" required error={errors.email?.message}>
 							<StyledInput
 								type="email"
 								placeholder="john@company.com"
+								autoComplete="email"
+								aria-required="true"
 								{...register("email")}
 							/>
 						</Field>
 
 						<Field label="Phone" required error={errors.phone?.message}>
 							<StyledInput
+								type="tel"
 								placeholder="+1 234 567 890"
+								autoComplete="tel"
+								aria-required="true"
 								{...register("phone")}
 							/>
 						</Field>
+
+						<Field label="Country" required error={errors.country?.message}>
+							<StyledInput
+								placeholder="US"
+								autoComplete="country"
+								aria-required="true"
+								{...register("country")}
+							/>
+						</Field>
+
+						<Field label="Location" required error={errors.location?.message}>
+							<StyledInput
+								placeholder="New York"
+								aria-required="true"
+								{...register("location")}
+							/>
+						</Field>
+
+						<SectionLabel>Role & Employment</SectionLabel>
 
 						<Field
 							label="Department"
@@ -449,6 +580,7 @@ export function EmployeeDialog({
 						>
 							<StyledInput
 								placeholder="Engineering"
+								aria-required="true"
 								{...register("department")}
 							/>
 						</Field>
@@ -456,35 +588,29 @@ export function EmployeeDialog({
 						<Field label="Job Title" required error={errors.jobTitle?.message}>
 							<StyledInput
 								placeholder="Senior Developer"
+								aria-required="true"
 								{...register("jobTitle")}
 							/>
 						</Field>
 
-						<Field label="Country" required error={errors.country?.message}>
-							<StyledInput placeholder="US" {...register("country")} />
-						</Field>
-
-						<Field label="Currency" required error={errors.currency?.message}>
-							<StyledInput
-								maxLength={3}
-								placeholder="USD"
-								{...register("currency")}
-							/>
-						</Field>
-
-						<Field label="Salary" required error={errors.salary?.message}>
-							<StyledInput
-								type="number"
-								placeholder="75000"
-								{...register("salary")}
-							/>
-						</Field>
-
 						<Field label="Employment Type" required>
-							<StyledSelect {...register("employmentType")}>
+							<StyledSelect
+								aria-required="true"
+								{...register("employmentType")}
+							>
 								{Object.values(EmploymentType).map((type) => (
 									<option key={type} value={type}>
 										{type}
+									</option>
+								))}
+							</StyledSelect>
+						</Field>
+
+						<Field label="Status" required>
+							<StyledSelect aria-required="true" {...register("status")}>
+								{EMPLOYEE_STATUS_OPTIONS.map((status) => (
+									<option key={status} value={status}>
+										{status}
 									</option>
 								))}
 							</StyledSelect>
@@ -495,21 +621,44 @@ export function EmployeeDialog({
 							required
 							error={errors.joiningDate?.message}
 						>
-							<StyledInput type="date" {...register("joiningDate")} />
+							<StyledInput
+								type="date"
+								aria-required="true"
+								{...register("joiningDate")}
+							/>
 						</Field>
 
-						<Field label="Status" required>
-							<StyledSelect {...register("status")}>
-								{Object.values(EmployeeStatus).map((status) => (
-									<option key={status} value={status}>
-										{status}
-									</option>
-								))}
-							</StyledSelect>
+						{/* <Field label="Manager Name" error={errors.managerName?.message}>
+							<StyledInput
+								placeholder="Jane Doe (optional)"
+								{...register("managerName")}
+							/>
+						</Field> */}
+
+						<SectionLabel>Compensation</SectionLabel>
+
+						<Field label="Salary" required error={errors.salary?.message}>
+							<StyledInput
+								type="number"
+								placeholder="75000"
+								min={0}
+								aria-required="true"
+								{...register("salary")}
+							/>
+						</Field>
+
+						<Field label="Currency" required error={errors.currency?.message}>
+							<StyledInput
+								maxLength={3}
+								placeholder="USD"
+								aria-required="true"
+								style={{ textTransform: "uppercase" }}
+								{...register("currency")}
+							/>
 						</Field>
 
 						<Field label="Salary Band" required>
-							<StyledSelect {...register("salaryBand")}>
+							<StyledSelect aria-required="true" {...register("salaryBand")}>
 								{Object.values(SalaryBand).map((band) => (
 									<option key={band} value={band}>
 										{band}
@@ -518,59 +667,101 @@ export function EmployeeDialog({
 							</StyledSelect>
 						</Field>
 
-						<Field label="Location" required error={errors.location?.message}>
-							<StyledInput placeholder="New York" {...register("location")} />
-						</Field>
-
-						<Field label="Timezone" required error={errors.timezone?.message}>
+						<Field
+							label="Performance Rating"
+							error={errors.performanceRating?.message}
+						>
 							<StyledInput
-								placeholder="America/New_York"
-								{...register("timezone")}
+								type="number"
+								placeholder="1–5 (optional)"
+								min={1}
+								max={5}
+								step={0.1}
+								{...register("performanceRating")}
 							/>
 						</Field>
 
-						<div
+						{/* Bonus eligible — full width checkbox row */}
+						{/* <div
 							style={{
+								gridColumn: "1 / -1",
 								display: "flex",
 								alignItems: "center",
 								gap: 10,
-								padding: 14,
+								padding: "12px 14px",
 								background: "#f8fafc",
-								borderRadius: 12,
+								borderRadius: 10,
+								border: "1.5px solid #e2e8f0",
+								cursor: "pointer",
 							}}
 						>
-							<Mail size={18} />
-							<p
+							<input
+								id="bonusEligible"
+								type="checkbox"
 								style={{
-									margin: 0,
-									fontSize: "0.85rem",
-									color: "#64748b",
+									width: 16,
+									height: 16,
+									cursor: "pointer",
+									accentColor: "#1a7fd4",
+								}}
+								{...register("bonusEligible")}
+							/>
+							<label
+								htmlFor="bonusEligible"
+								style={{
+									fontSize: "0.875rem",
+									color: "#374151",
+									fontWeight: 500,
+									cursor: "pointer",
 								}}
 							>
-								System will send login details automatically.
-							</p>
-						</div>
+								Bonus eligible
+							</label>
+						</div> */}
+
+						<SectionLabel>Locale</SectionLabel>
+
+						<Field
+							label="Timezone"
+							required
+							error={errors.timezone?.message}
+							fullWidth
+						>
+							<StyledInput
+								placeholder="America/New_York"
+								aria-required="true"
+								{...register("timezone")}
+							/>
+						</Field>
 					</form>
 				</div>
 
+				{/* Footer actions */}
 				<div
 					style={{
 						display: "flex",
 						justifyContent: "flex-end",
-						gap: 12,
-						padding: "18px 28px",
+						gap: 10,
+						padding: "16px 28px",
 						borderTop: "1px solid #f1f5f9",
+						background: "#fafbfc",
+						flexShrink: 0,
 					}}
 				>
 					<button
 						type="button"
 						onClick={onClose}
+						disabled={isPending}
 						style={{
-							padding: "10px 24px",
-							borderRadius: 10,
-							border: "1px solid #e2e8f0",
+							padding: "10px 22px",
+							borderRadius: 8,
+							border: "1.5px solid #e2e8f0",
 							background: "#fff",
+							fontSize: "0.875rem",
+							fontWeight: 500,
+							color: "#374151",
 							cursor: "pointer",
+							fontFamily: "inherit",
 						}}
 					>
 						Cancel
@@ -581,22 +772,28 @@ export function EmployeeDialog({
 						form="employee-form"
 						disabled={isPending}
 						style={{
-							padding: "10px 28px",
-							borderRadius: 10,
+							padding: "10px 26px",
+							borderRadius: 8,
 							border: "none",
-							background: "linear-gradient(135deg,#1a7fd4,#0f5fa8)",
+							background: isPending
+								? "#93c5fd"
+								: "linear-gradient(135deg, #1a7fd4 0%, #0f5fa8 100%)",
 							color: "#fff",
-							cursor: "pointer",
+							fontSize: "0.875rem",
+							fontWeight: 600,
+							cursor: isPending ? "not-allowed" : "pointer",
+							fontFamily: "inherit",
+							transition: "opacity 0.15s",
 						}}
 					>
 						{isPending
-							? "Saving..."
-							: employee
+							? "Saving…"
+							: isEditing
 								? "Update Employee"
 								: "Add Employee"}
 					</button>
 				</div>
-			</div>
+			</dialog>
 		</>
 	);
 }
