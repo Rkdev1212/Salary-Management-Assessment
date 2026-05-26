@@ -15,7 +15,7 @@ import {
 	Shield,
 	Users,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -27,17 +27,6 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-function useIsMobile() {
-	const [isMobile, setIsMobile] = useState(false);
-	useEffect(() => {
-		const check = () => setIsMobile(window.innerWidth < 768);
-		check();
-		window.addEventListener("resize", check);
-		return () => window.removeEventListener("resize", check);
-	}, []);
-	return isMobile;
-}
-
 export function LoginPage() {
 	const navigate = useNavigate();
 	const { setUser } = useAuthStore();
@@ -45,7 +34,6 @@ export function LoginPage() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
 	const [apiError, setApiError] = useState<string | null>(null);
-	const isMobile = useIsMobile();
 
 	const {
 		register,
@@ -71,41 +59,11 @@ export function LoginPage() {
 	};
 
 	return (
-		<div
-			style={{
-				minHeight: "100vh",
-				display: "flex",
-				flexDirection: isMobile ? "column" : "row",
-				background: "linear-gradient(135deg, #e8f4fd 0%, #ddeeff 100%)",
-				fontFamily: "'Segoe UI', system-ui, sans-serif",
-			}}
-		>
+		<div className="min-h-screen flex flex-col lg:flex-row bg-[linear-gradient(135deg,#e8f4fd_0%,#ddeeff_100%)] font-sans">
 			{/* ── Left / Top Branding Panel ── */}
-			<div
-				style={{
-					flex: isMobile ? "0 0 auto" : 1,
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "center",
-					justifyContent: "center",
-					padding: isMobile ? "36px 24px 28px" : "48px 40px",
-					gap: isMobile ? "18px" : "28px",
-				}}
-			>
+			<div className="flex-none lg:flex-1 flex flex-col items-center justify-center p-9 px-6 pb-7 lg:p-12 lg:px-10 gap-[18px] lg:gap-[28px]">
 				{/* Logo */}
-				<div
-					style={{
-						width: isMobile ? 58 : 72,
-						height: isMobile ? 58 : 72,
-						borderRadius: 18,
-						background: "linear-gradient(135deg, #1a7fd4, #0f5fa8)",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						boxShadow: "0 8px 24px rgba(26,127,212,0.35)",
-						flexShrink: 0,
-					}}
-				>
+				<div className="w-[58px] h-[58px] lg:w-[72px] lg:h-[72px] rounded-[18px] bg-[linear-gradient(135deg,#1a7fd4,#0f5fa8)] flex items-center justify-center shadow-[0_8px_24px_rgba(26,127,212,0.35)] shrink-0">
 					<svg
 						width="32"
 						height="32"
@@ -130,88 +88,39 @@ export function LoginPage() {
 				</div>
 
 				{/* Title */}
-				<div style={{ textAlign: "center" }}>
-					<h1
-						style={{
-							fontSize: isMobile ? "1.75rem" : "2.4rem",
-							fontWeight: 800,
-							color: "#1a1a2e",
-							margin: 0,
-							lineHeight: 1.2,
-						}}
-					>
-						Welcome to <span style={{ color: "#1a7fd4" }}>Salary</span>
-						{isMobile ? " " : <br />}
-						<span style={{ color: "#1a7fd4" }}>Management</span>
+				<div className="text-center">
+					<h1 className="text-[1.75rem] lg:text-[2.4rem] font-extrabold text-[#1a1a2e] m-0 leading-[1.2]">
+						Welcome to <span className="text-[#1a7fd4]">Salary</span>
+						<span className="inline lg:hidden"> </span>
+						<br className="hidden lg:inline" />
+						<span className="text-[#1a7fd4]">Management</span>
 					</h1>
-					<p
-						style={{
-							marginTop: 8,
-							fontSize: isMobile ? "0.88rem" : "1rem",
-							fontWeight: 600,
-							color: "#555",
-							letterSpacing: "0.02em",
-						}}
-					>
+					<p className="mt-2 text-[0.88rem] lg:text-[1rem] font-semibold text-[#555] tracking-[0.02em]">
 						Administrator Management Portal
 					</p>
 				</div>
 
 				{/* Description — hidden on very small screens to save space */}
-				{!isMobile && (
-					<p
-						style={{
-							fontSize: "0.95rem",
-							color: "#666",
-							textAlign: "center",
-							maxWidth: 340,
-							lineHeight: 1.7,
-							margin: 0,
-						}}
-					>
-						Streamline your payroll process. Review submissions, manage
-						approvals, and collaborate with your team efficiently.
-					</p>
-				)}
+				<p className="hidden sm:block text-[0.95rem] text-[#666] text-center max-w-[340px] leading-[1.7] m-0">
+					Streamline your payroll process. Review submissions, manage approvals,
+					and collaborate with your team efficiently.
+				</p>
 
 				{/* Feature icons */}
-				<div
-					style={{
-						display: "flex",
-						gap: isMobile ? "24px" : "40px",
-						marginTop: isMobile ? 0 : 8,
-					}}
-				>
+				<div className="flex gap-6 lg:gap-10 mt-0 lg:mt-2">
 					{[
 						{ Icon: BarChart2, label: "Analytics" },
 						{ Icon: Shield, label: "Security" },
 						{ Icon: Users, label: "Collaboration" },
 					].map(({ Icon, label }) => (
-						<div
-							key={label}
-							style={{
-								display: "flex",
-								flexDirection: "column",
-								alignItems: "center",
-								gap: 6,
-							}}
-						>
-							<div
-								style={{
-									width: isMobile ? 38 : 44,
-									height: isMobile ? 38 : 44,
-									borderRadius: 12,
-									background: "rgba(26,127,212,0.1)",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-								}}
-							>
-								<Icon size={isMobile ? 18 : 22} color="#1a7fd4" />
+						<div key={label} className="flex flex-col items-center gap-1.5">
+							<div className="w-[38px] h-[38px] lg:w-[44px] lg:h-[44px] rounded-xl bg-[rgba(26,127,212,0.1)] flex items-center justify-center">
+								<Icon
+									className="w-[18px] h-[18px] lg:w-[22px] lg:h-[22px]"
+									color="#1a7fd4"
+								/>
 							</div>
-							<span
-								style={{ fontSize: "0.78rem", color: "#555", fontWeight: 500 }}
-							>
+							<span className="text-[0.78rem] text-[#555] font-medium">
 								{label}
 							</span>
 						</div>
@@ -220,142 +129,73 @@ export function LoginPage() {
 			</div>
 
 			{/* ── Right / Bottom Form Panel ── */}
-			<div
-				style={{
-					display: "flex",
-					alignItems: isMobile ? "flex-start" : "center",
-					justifyContent: "center",
-					padding: isMobile ? "0 16px 40px" : "40px 48px",
-					flex: isMobile ? "1 1 auto" : "0 0 auto",
-				}}
-			>
-				<div
-					style={{
-						background: "white",
-						borderRadius: 20,
-						boxShadow: "0 8px 40px rgba(0,0,0,0.10)",
-						padding: isMobile ? "32px 24px" : "44px 40px",
-						width: "100%",
-						maxWidth: 420,
-					}}
-				>
-					<h2
-						style={{
-							fontSize: isMobile ? "1.4rem" : "1.7rem",
-							fontWeight: 700,
-							color: "#1a1a2e",
-							margin: "0 0 6px",
-						}}
-					>
+			<div className="flex items-start lg:items-center justify-center p-0 px-4 pb-10 lg:p-10 lg:px-12 flex-1 lg:flex-none">
+				<div className="bg-white rounded-[20px] shadow-[0_8px_40px_rgba(0,0,0,0.10)] p-8 px-6 lg:p-11 lg:px-10 w-full max-w-[420px]">
+					<h2 className="text-[1.4rem] lg:text-[1.7rem] font-bold text-[#1a1a2e] m-0 mb-1.5">
 						Sign In
 					</h2>
-					<p style={{ fontSize: "0.9rem", color: "#888", marginBottom: 24 }}>
+					<p className="text-[0.9rem] text-[#888] mb-6">
 						Enter your credentials to access your account
 					</p>
 
 					<form
 						onSubmit={handleSubmit(onSubmit)}
-						style={{ display: "flex", flexDirection: "column", gap: 18 }}
+						className="flex flex-col gap-[18px]"
 					>
 						{/* Email */}
-						<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+						<div className="flex flex-col gap-1.5">
 							<Label
 								htmlFor="email"
-								style={{ fontSize: "0.88rem", fontWeight: 600, color: "#333" }}
+								className="text-[0.88rem] font-semibold text-[#333]"
 							>
 								Email Address
 							</Label>
-							<div style={{ position: "relative" }}>
+							<div className="relative">
 								<Mail
 									size={16}
 									color="#aaa"
-									style={{
-										position: "absolute",
-										left: 14,
-										top: "50%",
-										transform: "translateY(-50%)",
-										pointerEvents: "none",
-									}}
+									className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
 								/>
 								<Input
 									id="email"
 									type="email"
 									placeholder="admin@example.com"
 									{...register("email")}
-									style={{
-										paddingLeft: 40,
-										height: 46,
-										borderRadius: 10,
-										border: errors.email
-											? "1.5px solid #e74c3c"
-											: "1.5px solid #e0e0e0",
-										fontSize: "0.93rem",
-										background: "#fafafa",
-										width: "100%",
-										boxSizing: "border-box",
-									}}
+									className={`pl-10 h-[46px] rounded-[10px] text-[0.93rem] bg-[#fafafa] w-full border-[1.5px] border-solid box-border ${errors.email ? "border-[#e74c3c]" : "border-[#e0e0e0]"}`}
 								/>
 							</div>
 							{errors.email && (
-								<p style={{ fontSize: "0.8rem", color: "#e74c3c", margin: 0 }}>
+								<p className="text-[0.8rem] text-[#e74c3c] m-0">
 									{errors.email.message}
 								</p>
 							)}
 						</div>
 
 						{/* Password */}
-						<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+						<div className="flex flex-col gap-1.5">
 							<Label
 								htmlFor="password"
-								style={{ fontSize: "0.88rem", fontWeight: 600, color: "#333" }}
+								className="text-[0.88rem] font-semibold text-[#333]"
 							>
 								Password
 							</Label>
-							<div style={{ position: "relative" }}>
+							<div className="relative">
 								<Lock
 									size={16}
 									color="#aaa"
-									style={{
-										position: "absolute",
-										left: 14,
-										top: "50%",
-										transform: "translateY(-50%)",
-										pointerEvents: "none",
-									}}
+									className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
 								/>
 								<Input
 									id="password"
 									type={showPassword ? "text" : "password"}
 									placeholder="••••••••"
 									{...register("password")}
-									style={{
-										paddingLeft: 40,
-										paddingRight: 44,
-										height: 46,
-										borderRadius: 10,
-										border: errors.password
-											? "1.5px solid #e74c3c"
-											: "1.5px solid #e0e0e0",
-										fontSize: "0.93rem",
-										background: "#fafafa",
-										width: "100%",
-										boxSizing: "border-box",
-									}}
+									className={`pl-10 pr-11 h-[46px] rounded-[10px] text-[0.93rem] bg-[#fafafa] w-full border-[1.5px] border-solid box-border ${errors.password ? "border-[#e74c3c]" : "border-[#e0e0e0]"}`}
 								/>
 								<button
 									type="button"
 									onClick={() => setShowPassword((v) => !v)}
-									style={{
-										position: "absolute",
-										right: 12,
-										top: "50%",
-										transform: "translateY(-50%)",
-										background: "none",
-										border: "none",
-										cursor: "pointer",
-										padding: 0,
-										display: "flex",
-									}}
+									className="absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer p-0 flex"
 								>
 									{showPassword ? (
 										<EyeOff size={17} color="#aaa" />
@@ -365,7 +205,7 @@ export function LoginPage() {
 								</button>
 							</div>
 							{errors.password && (
-								<p style={{ fontSize: "0.8rem", color: "#e74c3c", margin: 0 }}>
+								<p className="text-[0.8rem] text-[#e74c3c] m-0">
 									{errors.password.message}
 								</p>
 							)}
@@ -373,16 +213,7 @@ export function LoginPage() {
 
 						{/* API error */}
 						{apiError && (
-							<div
-								style={{
-									background: "#fff0f0",
-									border: "1.5px solid #f5c6c6",
-									borderRadius: 8,
-									padding: "10px 14px",
-									fontSize: "0.88rem",
-									color: "#c0392b",
-								}}
-							>
+							<div className="bg-[#fff0f0] border-[1.5px] border-[#f5c6c6] rounded-lg p-2.5 px-3.5 text-[0.88rem] text-[#c0392b]">
 								{apiError}
 							</div>
 						)}
@@ -391,27 +222,7 @@ export function LoginPage() {
 						<Button
 							type="submit"
 							disabled={isLoading}
-							style={{
-								height: 48,
-								borderRadius: 10,
-								background: isLoading
-									? "#7fb8e8"
-									: "linear-gradient(135deg, #1a7fd4, #0f5fa8)",
-								color: "white",
-								fontSize: "1rem",
-								fontWeight: 600,
-								border: "none",
-								cursor: isLoading ? "not-allowed" : "pointer",
-								display: "flex",
-								alignItems: "center",
-								justifyContent: "center",
-								gap: 8,
-								boxShadow: isLoading
-									? "none"
-									: "0 4px 14px rgba(26,127,212,0.4)",
-								transition: "all 0.2s",
-								width: "100%",
-							}}
+							className={`h-12 rounded-[10px] text-white text-base font-semibold border-none flex items-center justify-center gap-2 transition-all duration-200 w-full ${isLoading ? "bg-[#7fb8e8] cursor-not-allowed shadow-none" : "bg-[linear-gradient(135deg,#1a7fd4,#0f5fa8)] cursor-pointer shadow-[0_4px_14px_rgba(26,127,212,0.4)] hover:opacity-95"}`}
 						>
 							{isLoading ? "Signing in..." : "Sign In"}
 							{!isLoading && <ArrowRight size={18} />}
@@ -419,23 +230,11 @@ export function LoginPage() {
 					</form>
 
 					{/* Footer */}
-					<p
-						style={{
-							textAlign: "center",
-							fontSize: "0.85rem",
-							color: "#888",
-							marginTop: 22,
-							marginBottom: 0,
-						}}
-					>
+					<p className="text-center text-[0.85rem] text-[#888] mt-[22px] mb-0">
 						Don't have an account?{" "}
 						<a
 							href="mailto:admin@yourcompany.com"
-							style={{
-								color: "#1a7fd4",
-								fontWeight: 600,
-								textDecoration: "none",
-							}}
+							className="text-[#1a7fd4] font-semibold no-underline hover:underline"
 						>
 							Contact your administrator
 						</a>
