@@ -158,7 +158,7 @@ export function LoginPage() {
 									type="email"
 									placeholder="admin@example.com"
 									{...register("email")}
-									className={`pl-10 h-[46px] rounded-[10px] text-[0.93rem] bg-[#fafafa] w-full border-[1.5px] border-solid box-border ${errors.email ? "border-[#e74c3c]" : "border-[#e0e0e0]"}`}
+									className={`pl-10 h-[46px] rounded-[10px] text-[0.93rem] bg-[#fafafa] w-full border-[1.5px] border-solid box-border ${errors.email ? "border-[#e74c3c]" : "border-[#e0e0e0]"} focus:border-[#1a7fd4] focus:outline-none`}
 								/>
 							</div>
 							{errors.email && (
@@ -187,7 +187,7 @@ export function LoginPage() {
 									type={showPassword ? "text" : "password"}
 									placeholder="••••••••"
 									{...register("password")}
-									className={`pl-10 pr-11 h-[46px] rounded-[10px] text-[0.93rem] bg-[#fafafa] w-full border-[1.5px] border-solid box-border ${errors.password ? "border-[#e74c3c]" : "border-[#e0e0e0]"}`}
+									className={`pl-10 pr-11 h-[46px] rounded-[10px] text-[0.93rem] bg-[#fafafa] w-full border-[1.5px] border-solid box-border ${errors.password ? "border-[#e74c3c]" : "border-[#e0e0e0]"} focus:border-[#1a7fd4] focus:outline-none`}
 								/>
 								<button
 									type="button"
