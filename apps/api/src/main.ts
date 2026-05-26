@@ -18,6 +18,21 @@ async function bootstrap(): Promise<void> {
 			logger.info(`API URL: http://localhost:${env.PORT}/api`);
 		});
 
+		server.on("error", (error: NodeJS.ErrnoException) => {
+			if (error.code === "EADDRINUSE") {
+				logger.error(`Port ${env.PORT} is already in use`);
+				process.exit(1);
+			}
+
+			if (error.code === "EACCES") {
+				logger.error(`Port ${env.PORT} requires elevated privileges`);
+				process.exit(1);
+			}
+
+			logger.error("Server error", error);
+			process.exit(1);
+		});
+
 		// Graceful shutdown
 		const shutdown = async (signal: string): Promise<void> => {
 			logger.info(`${signal} received, shutting down gracefully`);

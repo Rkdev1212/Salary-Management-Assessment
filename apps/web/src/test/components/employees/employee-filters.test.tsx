@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { EmployeeFilters } from "./employee-filters";
+import { EmployeeFilters } from "@/components/employees/employee-filters";
 
 const queryClient = new QueryClient({
 	defaultOptions: {

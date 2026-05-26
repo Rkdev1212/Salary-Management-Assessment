@@ -1,7 +1,7 @@
 import type { Employee } from "@repo/types";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { EmployeeTable } from "./employee-table";
+import { EmployeeTable } from "@/components/employees/employee-table";
 
 const mockEmployees: Employee[] = [
 	{

@@ -1,4 +1,4 @@
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@repo/ui";
 import { employeeService } from "@/services/employee.service";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EmployeeStatus, EmploymentType, SalaryBand } from "@repo/types";

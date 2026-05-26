@@ -10,7 +10,9 @@
 		"test:watch": "vitest"
 	},
 	"dependencies": {
-		"@repo/types": "workspace:*"
+		"@repo/types": "workspace:*",
+		"clsx": "^2.1.1",
+		"tailwind-merge": "^1.14.0"
 	},
 	"devDependencies": {
 		"@repo/tsconfig": "workspace:*",

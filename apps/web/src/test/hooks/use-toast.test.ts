@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { toast, useToast } from "./use-toast";
+import { toast, useToast } from "@repo/ui";
 
 describe("useToast", () => {
 	it("adds a toast", () => {

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CreateEmployeeDto } from "@repo/types";
-import { EmployeeRepository } from "../repositories/employee.repository";
-import { EmployeeService } from "./employee.service";
+import { EmployeeRepository } from "@/repositories/employee.repository";
+import { EmployeeService } from "@/services/employee.service";
 
-vi.mock("../repositories/employee.repository");
+vi.mock("@/repositories/employee.repository");
 
 describe("EmployeeService", () => {
 	let service: EmployeeService;

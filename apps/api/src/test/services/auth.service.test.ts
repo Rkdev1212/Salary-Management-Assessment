@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { User } from "@prisma/client";
-import { ConflictError, UnauthorizedError } from "../middleware/error-handler";
-import { AuthService } from "./auth.service";
+import { ConflictError, UnauthorizedError } from "@/middleware/error-handler";
+import { AuthService } from "@/services/auth.service";
 
 // Mock prisma
-vi.mock("../config/database", () => ({
+vi.mock("@/config/database", () => ({
 	prisma: {
 		user: {
 			findUnique: vi.fn(),
@@ -36,7 +36,7 @@ describe("AuthService", () => {
 				updatedAt: new Date(),
 			};
 
-			const { prisma } = await import("../config/database");
+			const { prisma } = await import("@/config/database");
 			vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 			vi.mocked(prisma.user.create).mockResolvedValue(mockUser);
 			vi.mocked(prisma.user.update).mockResolvedValue(mockUser);
@@ -54,7 +54,7 @@ describe("AuthService", () => {
 		});
 
 		it("should throw ConflictError if user exists", async () => {
-			const { prisma } = await import("../config/database");
+			const { prisma } = await import("@/config/database");
 			const existingUser: User = {
 				id: "1",
 				email: "test@example.com",
@@ -81,7 +81,7 @@ describe("AuthService", () => {
 
 	describe("login", () => {
 		it("should throw UnauthorizedError for invalid credentials", async () => {
-			const { prisma } = await import("../config/database");
+			const { prisma } = await import("@/config/database");
 			vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
 
 			await expect(

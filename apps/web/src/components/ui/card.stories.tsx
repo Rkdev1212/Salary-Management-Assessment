@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Button } from "./button";
 import {
+	Button,
 	Card,
 	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from "./card";
+} from "@repo/ui";
 
 const meta = {
-	title: "UI/Card",
+	title: "Primitives/Card",
 	component: Card,
 	parameters: {
 		layout: "centered",
@@ -78,6 +78,7 @@ export const StatCard: Story = {
 					strokeWidth="2"
 					className="h-4 w-4 text-muted-foreground"
 				>
+					<title>Total employees icon</title>
 					<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
 					<circle cx="9" cy="7" r="4" />
 					<path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />

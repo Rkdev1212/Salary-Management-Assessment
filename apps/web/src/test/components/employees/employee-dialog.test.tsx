@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { EmployeeDialog } from "./employee-dialog";
+import { EmployeeDialog } from "@/components/employees/employee-dialog";
 
 const queryClient = new QueryClient({
 	defaultOptions: {

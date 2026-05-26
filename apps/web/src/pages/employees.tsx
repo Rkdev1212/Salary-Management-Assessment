@@ -1,7 +1,7 @@
 import { EmployeeDialog } from "@/components/employees/employee-dialog";
 import { EmployeeFilters } from "@/components/employees/employee-filters";
 import { EmployeeTable } from "@/components/employees/employee-table";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@repo/ui";
 import { employeeService } from "@/services/employee.service";
 import type { Employee, EmployeeFilters as Filters } from "@repo/types";
 import { EmployeeStatus } from "@repo/types";

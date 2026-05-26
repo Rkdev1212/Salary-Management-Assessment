@@ -1,12 +1,12 @@
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
+	Button,
+	Label,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from "@/components/ui/select";
+} from "@repo/ui";
 import { employeeService } from "@/services/employee.service";
 import { EmployeeStatus, EmploymentType } from "@repo/types";
 import type { EmployeeFilters as Filters } from "@repo/types";

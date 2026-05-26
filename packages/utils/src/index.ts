@@ -3,3 +3,4 @@ export * from "./validation";
 export * from "./date";
 export * from "./currency";
 export * from "./analytics";
+export * from "./classnames";

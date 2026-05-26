@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Employee } from "@repo/types";
-import { AnalyticsService } from "./analytics.service";
+import { AnalyticsService } from "@/services/analytics.service";
 
-vi.mock("../config/database", () => ({
+vi.mock("@/config/database", () => ({
 	prisma: {
 		employee: {
 			findMany: vi.fn(),
@@ -21,7 +21,7 @@ describe("AnalyticsService", () => {
 
 	describe("getDashboard", () => {
 		it("returns dashboard analytics", async () => {
-			const { prisma } = await import("../config/database");
+			const { prisma } = await import("@/config/database");
 
 			const mockEmployees: Employee[] = [
 				{

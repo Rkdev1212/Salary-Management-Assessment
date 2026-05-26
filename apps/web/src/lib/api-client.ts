@@ -1,10 +1,13 @@
 import type { ApiError, ApiResponse } from "@repo/types";
-import type { ImportMetaEnv } from "vite";
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 
+type ImportMetaEnv = {
+	readonly VITE_API_URL?: string;
+};
+
 const API_URL =
-	(import.meta as ImportMeta & { env: ImportMetaEnv }).env.VITE_API_URL ||
-	"http://localhost:3001/api";
+	(import.meta as ImportMeta & { readonly env: ImportMetaEnv }).env
+		.VITE_API_URL || "http://127.0.0.1:3001/api";
 
 class ApiClient {
 	private client: AxiosInstance;

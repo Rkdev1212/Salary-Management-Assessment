@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Edit, Plus } from "lucide-react";
-import { Button } from "./button";
+import { Button } from "@repo/ui";
 
 const meta = {
-	title: "UI/Button",
+	title: "Primitives/Button",
 	component: Button,
 	parameters: {
 		layout: "centered",

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { EmployeesPage } from "./employees";
+import { EmployeesPage } from "@/pages/employees";
 
 vi.mock("@/services/employee.service", () => ({
 	employeeService: {

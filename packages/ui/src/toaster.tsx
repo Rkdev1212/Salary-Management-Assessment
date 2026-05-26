@@ -5,8 +5,8 @@ import {
 	ToastProvider,
 	ToastTitle,
 	ToastViewport,
-} from "@/components/ui/toast";
-import { useToast } from "@/hooks/use-toast";
+} from "./toast";
+import { useToast } from "./hooks/use-toast";
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 
 export function Toaster() {

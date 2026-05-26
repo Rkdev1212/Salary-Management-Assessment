@@ -1,6 +1,6 @@
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@repo/ui";
 import { DashboardPage } from "@/pages/dashboard";
 import { EmployeesPage } from "@/pages/employees";
 import { LoginPage } from "@/pages/login";

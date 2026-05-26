@@ -1,10 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Lock, Mail, Search } from "lucide-react";
-import { Input } from "./input";
-import { Label } from "./label";
+import { Input, Label } from "@repo/ui";
 
 const meta = {
-	title: "UI/Input",
+	title: "Primitives/Input",
 	component: Input,
 	parameters: {
 		layout: "centered",
