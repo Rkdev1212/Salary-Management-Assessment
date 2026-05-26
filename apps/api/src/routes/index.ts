@@ -3,7 +3,7 @@ import analyticsRoutes from "./analytics.routes";
 import authRoutes from "./auth.routes";
 import employeeRoutes from "./employee.routes";
 
-const router = Router();
+const router: Router = Router();
 
 router.get("/health", (_req, res) => {
 	res.json({

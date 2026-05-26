@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { CreateEmployeeDto } from "@repo/types";
 import { EmployeeRepository } from "../repositories/employee.repository";
 import { EmployeeService } from "./employee.service";
 
@@ -25,7 +26,9 @@ describe("EmployeeService", () => {
 			count: vi.fn(),
 		};
 
-		vi.mocked(EmployeeRepository).mockImplementation(() => mockRepository);
+		vi.mocked(EmployeeRepository).mockImplementation(
+			() => mockRepository as unknown as EmployeeRepository,
+		);
 		service = new EmployeeService();
 	});
 
@@ -35,7 +38,7 @@ describe("EmployeeService", () => {
 			mockRepository.findAll.mockResolvedValue(mockEmployees);
 			mockRepository.count.mockResolvedValue(1);
 
-			const result = await service.getAll(
+			const result = await service.findAll(
 				{ page: 1, limit: 20, sortBy: "createdAt", sortOrder: "desc" },
 				{},
 			);
@@ -51,7 +54,7 @@ describe("EmployeeService", () => {
 			const mockEmployee = { id: "1", firstName: "John", lastName: "Doe" };
 			mockRepository.findById.mockResolvedValue(mockEmployee);
 
-			const result = await service.getById("1");
+			const result = await service.findById("1");
 
 			expect(result).toEqual(mockEmployee);
 			expect(mockRepository.findById).toHaveBeenCalledWith("1");
@@ -60,7 +63,7 @@ describe("EmployeeService", () => {
 		it("throws error when employee not found", async () => {
 			mockRepository.findById.mockResolvedValue(null);
 
-			await expect(service.getById("999")).rejects.toThrow(
+			await expect(service.findById("999")).rejects.toThrow(
 				"Employee not found",
 			);
 		});
@@ -68,7 +71,7 @@ describe("EmployeeService", () => {
 
 	describe("create", () => {
 		it("creates a new employee", async () => {
-			const newEmployee = {
+			const newEmployee: CreateEmployeeDto = {
 				firstName: "John",
 				lastName: "Doe",
 				email: "john@example.com",
@@ -78,10 +81,10 @@ describe("EmployeeService", () => {
 				salary: 75000,
 				department: "Engineering",
 				jobTitle: "Developer",
-				employmentType: "FULL_TIME" as const,
+				employmentType: "FULL_TIME",
 				joiningDate: new Date(),
-				status: "ACTIVE" as const,
-				salaryBand: "MID" as const,
+				status: "ACTIVE",
+				salaryBand: "MID",
 				bonusEligible: true,
 				location: "New York",
 				timezone: "America/New_York",

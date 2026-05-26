@@ -23,11 +23,14 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+class MockIntersectionObserver {
 	disconnect() {}
 	observe() {}
 	takeRecords() {
 		return [];
 	}
 	unobserve() {}
-};
+}
+
+global.IntersectionObserver =
+	MockIntersectionObserver as unknown as typeof IntersectionObserver;

@@ -1,25 +1,30 @@
 // Employee Types
-export enum EmploymentType {
-	FULL_TIME = "FULL_TIME",
-	PART_TIME = "PART_TIME",
-	CONTRACT = "CONTRACT",
-	INTERN = "INTERN",
-}
+export const EmploymentType = {
+	FULL_TIME: "FULL_TIME",
+	PART_TIME: "PART_TIME",
+	CONTRACT: "CONTRACT",
+	INTERN: "INTERN",
+} as const;
+export type EmploymentType =
+	(typeof EmploymentType)[keyof typeof EmploymentType];
 
-export enum EmployeeStatus {
-	ACTIVE = "ACTIVE",
-	INACTIVE = "INACTIVE",
-	ON_LEAVE = "ON_LEAVE",
-	TERMINATED = "TERMINATED",
-}
+export const EmployeeStatus = {
+	ACTIVE: "ACTIVE",
+	INACTIVE: "INACTIVE",
+	ON_LEAVE: "ON_LEAVE",
+	TERMINATED: "TERMINATED",
+} as const;
+export type EmployeeStatus =
+	(typeof EmployeeStatus)[keyof typeof EmployeeStatus];
 
-export enum SalaryBand {
-	JUNIOR = "JUNIOR",
-	MID = "MID",
-	SENIOR = "SENIOR",
-	LEAD = "LEAD",
-	PRINCIPAL = "PRINCIPAL",
-}
+export const SalaryBand = {
+	JUNIOR: "JUNIOR",
+	MID: "MID",
+	SENIOR: "SENIOR",
+	LEAD: "LEAD",
+	PRINCIPAL: "PRINCIPAL",
+} as const;
+export type SalaryBand = (typeof SalaryBand)[keyof typeof SalaryBand];
 
 export interface Employee {
 	id: string;

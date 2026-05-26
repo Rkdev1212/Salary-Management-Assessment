@@ -8,7 +8,7 @@ import {
 	registerSchema,
 } from "../validators/auth.validator";
 
-const router = Router();
+const router: Router = Router();
 const controller = new AuthController();
 
 router.post("/register", validateBody(registerSchema), controller.register);

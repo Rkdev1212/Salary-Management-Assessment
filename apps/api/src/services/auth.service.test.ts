@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { User } from "@prisma/client";
 import { ConflictError, UnauthorizedError } from "../middleware/error-handler";
 import { AuthService } from "./auth.service";
 
@@ -23,7 +24,7 @@ describe("AuthService", () => {
 
 	describe("register", () => {
 		it("should create a new user", async () => {
-			const mockUser = {
+			const mockUser: User = {
 				id: "1",
 				email: "test@example.com",
 				password: "hashedpassword",
@@ -54,7 +55,7 @@ describe("AuthService", () => {
 
 		it("should throw ConflictError if user exists", async () => {
 			const { prisma } = await import("../config/database");
-			vi.mocked(prisma.user.findUnique).mockResolvedValue({
+			const existingUser: User = {
 				id: "1",
 				email: "test@example.com",
 				password: "hashedpassword",
@@ -64,7 +65,8 @@ describe("AuthService", () => {
 				refreshToken: null,
 				createdAt: new Date(),
 				updatedAt: new Date(),
-			});
+			};
+			vi.mocked(prisma.user.findUnique).mockResolvedValue(existingUser);
 
 			await expect(
 				authService.register({

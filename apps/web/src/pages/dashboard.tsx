@@ -528,8 +528,8 @@ export function DashboardPage() {
 						{dashboard.departmentStats.slice(0, 6).map((d, i) => (
 							<LegendDot
 								key={d.department}
-								color={CHART_COLORS[i % CHART_COLORS.length]}
-								label={d.department}
+								color={CHART_COLORS[i % CHART_COLORS.length] as string}
+								label={d.department as string}
 							/>
 						))}
 					</div>

@@ -14,7 +14,7 @@ import {
 	updateEmployeeSchema,
 } from "../validators/employee.validator";
 
-const router = Router();
+const router: Router = Router();
 const controller = new EmployeeController();
 
 // All routes require authentication

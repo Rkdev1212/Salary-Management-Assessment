@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { type ZodSchema, z } from "zod";
+import type { ZodSchema } from "zod";
 
 export function validateBody<T extends ZodSchema>(schema: T) {
 	return (req: Request, _res: Response, next: NextFunction): void => {

@@ -1,7 +1,6 @@
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/store/auth.store";
 import {
-	Bell,
 	ChevronLeft,
 	ChevronRight,
 	HelpCircle,

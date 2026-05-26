@@ -33,12 +33,13 @@ export class EmployeeController {
 	};
 
 	findAll = async (
-		req: Request<object, object, object, PaginationParams & EmployeeFilters>,
+		req: Request,
 		res: Response<ApiResponse>,
 		next: NextFunction,
 	): Promise<void> => {
 		try {
-			const { page, limit, sortBy, sortOrder, ...filters } = req.query;
+			const query = req.query as unknown as PaginationParams & EmployeeFilters;
+			const { page, limit, sortBy, sortOrder, ...filters } = query;
 			const pagination: PaginationParams = { page, limit, sortBy, sortOrder };
 
 			const result = await this.service.findAll(pagination, filters);

@@ -14,24 +14,27 @@ export class EmployeeRepository {
 	async create(dto: CreateEmployeeDto): Promise<Employee> {
 		const fullName = formatFullName(dto.firstName, dto.lastName);
 
-		return prisma.employee.create({
+		const result = await prisma.employee.create({
 			data: {
 				...dto,
 				fullName,
 			},
 		});
+		return result as unknown as Employee;
 	}
 
 	async findById(id: string): Promise<Employee | null> {
-		return prisma.employee.findUnique({
+		const result = await prisma.employee.findUnique({
 			where: { id },
 		});
+		return result as unknown as Employee | null;
 	}
 
 	async findByEmail(email: string): Promise<Employee | null> {
-		return prisma.employee.findUnique({
+		const result = await prisma.employee.findUnique({
 			where: { email },
 		});
+		return result as unknown as Employee | null;
 	}
 
 	async findAll(
@@ -61,7 +64,7 @@ export class EmployeeRepository {
 		const totalPages = Math.ceil(total / limit);
 
 		return {
-			data,
+			data: data as unknown as Employee[],
 			meta: {
 				total,
 				page,
@@ -86,10 +89,11 @@ export class EmployeeRepository {
 			}
 		}
 
-		return prisma.employee.update({
+		const result = await prisma.employee.update({
 			where: { id },
 			data,
 		});
+		return result as unknown as Employee;
 	}
 
 	async delete(id: string): Promise<void> {
@@ -105,21 +109,24 @@ export class EmployeeRepository {
 	}
 
 	async findByCountry(country: string): Promise<Employee[]> {
-		return prisma.employee.findMany({
+		const result = await prisma.employee.findMany({
 			where: { country },
 		});
+		return result as unknown as Employee[];
 	}
 
 	async findByDepartment(department: string): Promise<Employee[]> {
-		return prisma.employee.findMany({
+		const result = await prisma.employee.findMany({
 			where: { department },
 		});
+		return result as unknown as Employee[];
 	}
 
 	async findByJobTitle(jobTitle: string): Promise<Employee[]> {
-		return prisma.employee.findMany({
+		const result = await prisma.employee.findMany({
 			where: { jobTitle },
 		});
+		return result as unknown as Employee[];
 	}
 
 	async getDistinctCountries(): Promise<string[]> {

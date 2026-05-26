@@ -33,7 +33,10 @@ export function calculateTenure(joiningDate: Date | string): number {
 /**
  * Get relative time string
  */
-export function getRelativeTime(date: Date | string, locale = "en-US"): string {
+export function getRelativeTime(
+	date: Date | string,
+	_locale = "en-US",
+): string {
 	const d = typeof date === "string" ? new Date(date) : date;
 	const now = new Date();
 	const diffMs = now.getTime() - d.getTime();

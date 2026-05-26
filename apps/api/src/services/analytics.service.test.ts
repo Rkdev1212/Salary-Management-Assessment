@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Employee } from "@repo/types";
 import { AnalyticsService } from "./analytics.service";
 
 vi.mock("../config/database", () => ({
@@ -22,7 +23,7 @@ describe("AnalyticsService", () => {
 		it("returns dashboard analytics", async () => {
 			const { prisma } = await import("../config/database");
 
-			vi.mocked(prisma.employee.findMany).mockResolvedValue([
+			const mockEmployees: Employee[] = [
 				{
 					id: "1",
 					firstName: "John",
@@ -46,7 +47,9 @@ describe("AnalyticsService", () => {
 					createdAt: new Date(),
 					updatedAt: new Date(),
 				},
-			]);
+			];
+
+			vi.mocked(prisma.employee.findMany).mockResolvedValue(mockEmployees);
 
 			const result = await service.getDashboard();
 

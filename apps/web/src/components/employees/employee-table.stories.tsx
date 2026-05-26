@@ -143,7 +143,7 @@ export const WithPagination: Story = {
 
 export const SingleEmployee: Story = {
 	args: {
-		data: [mockEmployees[0]],
+		data: [mockEmployees[0] as Employee],
 		isLoading: false,
 		onPageChange: () => {},
 		onEdit: (employee) => console.log("Edit:", employee),
