@@ -45,7 +45,7 @@ const NAV_ITEMS = [
 
 const BOTTOM_NAV_ITEMS = [
 	// { name: "Notifications", icon: Bell },
-	{ name: "Help", icon: HelpCircle },
+	// { name: "Help", icon: HelpCircle },
 ] as const;
 
 // ── Hooks ────────────────────────────────────────────────────────────────────

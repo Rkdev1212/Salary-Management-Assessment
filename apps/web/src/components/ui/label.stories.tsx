@@ -39,18 +39,18 @@ export const Required: Story = {
 	),
 };
 
-export const WithDescription: Story = {
-	render: () => (
-		<div className="w-[350px] space-y-2">
-			<Label htmlFor="bio">Bio</Label>
-			<textarea
-				id="bio"
-				className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-				placeholder="Tell us about yourself"
-			/>
-			<p className="text-sm text-muted-foreground">
-				Brief description for your profile
-			</p>
-		</div>
-	),
-};
+// export const WithDescription: Story = {
+// 	render: () => (
+// 		<div className="w-[350px] space-y-2">
+// 			<Label htmlFor="bio">Bio</Label>
+// 			<textarea
+// 				id="bio"
+// 				className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+// 				placeholder="Tell us about yourself"
+// 			/>
+// 			<p className="text-sm text-muted-foreground">
+// 				Brief description for your profile
+// 			</p>
+// 		</div>
+// 	),
+// };

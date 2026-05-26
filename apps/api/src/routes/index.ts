@@ -5,6 +5,28 @@ import employeeRoutes from "./employee.routes";
 
 const router: Router = Router();
 
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Health check
+ *     description: Returns the health status of the API.
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
 router.get("/health", (_req, res) => {
 	res.json({
 		success: true,

@@ -13,7 +13,7 @@ export function Toaster() {
 	const { toasts } = useToast();
 
 	return (
-		<ToastProvider duration={3000}>
+		<ToastProvider duration={2000}>
 			{toasts.map(({ id, title, description, action, variant, ...props }) => {
 				const isSuccess =
 					variant === "success" ||

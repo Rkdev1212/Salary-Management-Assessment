@@ -27,7 +27,9 @@
 		"helmet": "^7.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"winston": "^3.13.0",
-		"zod": "^3.23.8"
+		"zod": "^3.23.8",
+		"swagger-ui-express": "^5.0.0",
+		"swagger-jsdoc": "^6.2.8"
 	},
 	"devDependencies": {
 		"@faker-js/faker": "^8.4.1",

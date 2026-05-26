@@ -59,19 +59,19 @@ export const Secondary: Story = {
 	},
 };
 
-export const Ghost: Story = {
-	args: {
-		children: "Ghost",
-		variant: "ghost",
-	},
-};
+// export const Ghost: Story = {
+// 	args: {
+// 		children: "Ghost",
+// 		variant: "ghost",
+// 	},
+// };
 
-export const Link: Story = {
-	args: {
-		children: "Link",
-		variant: "link",
-	},
-};
+// export const Link: Story = {
+// 	args: {
+// 		children: "Link",
+// 		variant: "link",
+// 	},
+// };
 
 export const Small: Story = {
 	args: {
@@ -96,6 +96,41 @@ export const WithIcon: Story = {
 			</>
 		),
 	},
+};
+
+export const Primary: Story = {
+	render: () => (
+		<button
+			type="button"
+			className="emp-add-btn"
+			style={{
+				display: "flex",
+				alignItems: "center",
+				gap: 7,
+				padding: "9px 18px",
+				borderRadius: 9,
+				background: "linear-gradient(135deg,#3b9eff,#1a7fd4)",
+				color: "#fff",
+				border: "none",
+				fontWeight: 600,
+				fontSize: "0.875rem",
+				cursor: "pointer",
+				boxShadow: "0 3px 10px rgba(26,127,212,0.28)",
+				transition: "opacity 0.15s",
+				fontFamily: "inherit",
+				whiteSpace: "nowrap",
+			}}
+			onMouseEnter={(e) => {
+				(e.currentTarget as HTMLElement).style.opacity = "0.9";
+			}}
+			onMouseLeave={(e) => {
+				(e.currentTarget as HTMLElement).style.opacity = "1";
+			}}
+		>
+			<Plus size={15} aria-hidden="true" />
+			Primary Button
+		</button>
+	),
 };
 
 export const IconOnly: Story = {

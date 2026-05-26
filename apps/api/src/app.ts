@@ -6,6 +6,7 @@ import { env } from "./config/env";
 import { errorHandler } from "./middleware/error-handler";
 import { requestLogger } from "./middleware/request-logger";
 import routes from "./routes";
+import { setupSwagger } from "./swagger";
 
 export function createApp(): Application {
 	const app = express();
@@ -38,6 +39,8 @@ export function createApp(): Application {
 
 	// Routes
 	app.use("/api", routes);
+	// Swagger UI
+	setupSwagger(app);
 
 	// Error handling
 	app.use(errorHandler);

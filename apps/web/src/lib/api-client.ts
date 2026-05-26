@@ -5,9 +5,7 @@ type ImportMetaEnv = {
 	readonly VITE_API_URL?: string;
 };
 
-const API_URL =
-	(import.meta as ImportMeta & { readonly env: ImportMetaEnv }).env
-		.VITE_API_URL || "http://127.0.0.1:3001/api";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3010/api";
 
 class ApiClient {
 	private client: AxiosInstance;

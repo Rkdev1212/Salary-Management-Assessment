@@ -8,6 +8,21 @@ const controller = new AnalyticsController();
 // All routes require authentication
 router.use(authenticate);
 
+/**
+ * @openapi
+ * /dashboard:
+ *   get:
+ *     summary: Dashboard analytics
+ *     tags:
+ *       - Analytics
+ *     responses:
+ *       200:
+ *         description: Dashboard data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/AnalyticsDashboard"
+ */
 router.get("/dashboard", controller.getDashboard);
 router.get("/country-salary-stats", controller.getCountrySalaryStats);
 router.get("/job-title-salary-stats", controller.getJobTitleSalaryStats);
