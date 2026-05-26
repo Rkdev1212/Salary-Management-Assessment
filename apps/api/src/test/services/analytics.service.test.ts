@@ -28,6 +28,7 @@ describe("AnalyticsService", () => {
 					id: "1",
 					firstName: "John",
 					lastName: "Doe",
+					fullName: "John Doe",
 					email: "john@example.com",
 					phone: "+1234567890",
 					country: "US",

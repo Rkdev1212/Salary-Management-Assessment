@@ -1,9 +1,14 @@
 import type { ApiError, ApiResponse } from "@repo/types";
 import axios, { type AxiosInstance, type AxiosError } from "axios";
 
-type ImportMetaEnv = {
-	readonly VITE_API_URL?: string;
-};
+// Global declaration for import.meta.env
+declare global {
+	interface ImportMeta {
+		env: {
+			readonly VITE_API_URL?: string;
+		};
+	}
+}
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3010/api";
 

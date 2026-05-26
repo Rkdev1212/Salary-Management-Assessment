@@ -3,7 +3,6 @@ import { useAuthStore } from "@/store/auth.store";
 import {
 	ChevronLeft,
 	ChevronRight,
-	HelpCircle,
 	LayoutDashboard,
 	LogOut,
 	Menu,
@@ -43,10 +42,7 @@ const NAV_ITEMS = [
 	{ name: "Employees", href: "/employees", icon: Users },
 ] as const;
 
-const BOTTOM_NAV_ITEMS = [
-	// { name: "Notifications", icon: Bell },
-	// { name: "Help", icon: HelpCircle },
-] as const;
+const BOTTOM_NAV_ITEMS: { name: string; icon: React.ElementType }[] = [];
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
 function useWindowWidth() {

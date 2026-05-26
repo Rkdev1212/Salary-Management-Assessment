@@ -18,7 +18,7 @@ export const setupSwagger = (app: Express): void => {
 				description: "API documentation for Salary Management Platform",
 			},
 			servers: [
-				{ url: `${env.BASE_URL ?? "http://localhost"}:${env.PORT}/api` },
+				{ url: `${env.CORS_ORIGIN ?? "http://localhost"}:${env.PORT}/api` },
 			],
 			components: {
 				securitySchemes: {
