@@ -238,8 +238,9 @@ function ConfirmDialog({
 	if (!open) return null;
 
 	return (
-		<dialog
-			open
+		<div        // ← was <dialog open>
+			role="dialog"
+			aria-modal="true"
 			aria-labelledby="confirm-dialog-title"
 			style={{
 				position: "fixed",
@@ -278,6 +279,7 @@ function ConfirmDialog({
 					fontFamily: "'Segoe UI', system-ui, sans-serif",
 				}}
 			>
+				{/* Header */}
 				<div
 					style={{
 						padding: "18px 22px",
@@ -289,12 +291,7 @@ function ConfirmDialog({
 				>
 					<h3
 						id="confirm-dialog-title"
-						style={{
-							margin: 0,
-							fontSize: "0.95rem",
-							fontWeight: 700,
-							color: "#0f172a",
-						}}
+						style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "#0f172a" }}
 					>
 						{title}
 					</h3>
@@ -316,6 +313,7 @@ function ConfirmDialog({
 					</button>
 				</div>
 
+				{/* Body */}
 				<div
 					style={{
 						padding: "18px 22px",
@@ -327,6 +325,7 @@ function ConfirmDialog({
 					{message}
 				</div>
 
+				{/* Footer */}
 				<div
 					style={{
 						padding: "13px 22px",
@@ -355,10 +354,7 @@ function ConfirmDialog({
 					</button>
 					<button
 						type="button"
-						onClick={() => {
-							onConfirm();
-							onClose();
-						}}
+						onClick={() => { onConfirm(); onClose(); }}
 						style={{
 							padding: "8px 18px",
 							borderRadius: 8,
@@ -380,7 +376,7 @@ function ConfirmDialog({
 					</button>
 				</div>
 			</div>
-		</dialog>
+		</div>    // ← was </dialog>
 	);
 }
 
