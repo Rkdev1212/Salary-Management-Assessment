@@ -4,11 +4,11 @@ import type { Express } from "express";
 import { env } from "../config/env";
 
 export const setupSwagger = (app: Express): void => {
-	const docsPath =
-		env.NODE_ENV === "production"
-			? ["./dist/routes/*.js", "./dist/swagger/*.js"]
-			: ["./src/routes/*.ts", "./src/swagger/*.ts"];
+	const docsPath = env.NODE_ENV === "production"
+		? ["./dist/routes/*.js", "./dist/swagger/*.js"]
+		: ["./src/routes/*.ts", "./src/swagger/*.ts"];
 
+	const origin = env.CORS_ORIGIN?.replace(/:\d+$/, '') ?? "http://localhost";
 	const options = {
 		definition: {
 			openapi: "3.0.0",
@@ -18,7 +18,7 @@ export const setupSwagger = (app: Express): void => {
 				description: "API documentation for Salary Management Platform",
 			},
 			servers: [
-				{ url: `${env.CORS_ORIGIN ?? "http://localhost"}:${env.PORT}/api` },
+				{ url: `${origin}:${env.PORT}/api` },
 			],
 			components: {
 				securitySchemes: {

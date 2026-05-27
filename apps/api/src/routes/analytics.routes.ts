@@ -10,7 +10,7 @@ router.use(authenticate);
 
 /**
  * @openapi
- * /dashboard:
+ * /analytics/dashboard:
  *   get:
  *     summary: Dashboard analytics
  *     tags:
